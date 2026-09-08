@@ -77,111 +77,206 @@ button:active {
     transform: scale(0.98);
 }
 
+/* RECOMMENDATION & CHART SPLIT LAYOUT */
+.rec-chart-layout {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 14px;
+}
+
 .best-panel {
     background: #101216;
     border: 1px solid #262b35;
     border-radius: 12px;
     padding: 14px;
-    margin-bottom: 12px;
+    flex: 0 0 380px;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.chart-panel {
+    background: #101216;
+    border: 1px solid #262b35;
+    border-radius: 12px;
+    padding: 14px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.chart-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: #8c9ba5;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.legend-color {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.chart-canvas-container {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 290px;
+}
+
+#symbolChartCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 6px;
+    background: #090a0d;
+}
+
+.chart-tooltip {
+    position: absolute;
+    display: none;
+    background: rgba(18, 22, 28, 0.95);
+    border: 1px solid #3a4454;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #eee;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    white-space: nowrap;
 }
 
 .best-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: #aaa;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
 .selected-symbol {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: bold;
     color: #ffb13b;
     line-height: 1.1;
 }
 
 .selected-subtitle {
-    color: #999;
-    font-size: 13px;
+    color: #8c9ba5;
+    font-size: 12px;
     margin-top: 3px;
 }
 
 .price-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .price-box {
-    background: #202126;
-    border-radius: 10px;
-    padding: 12px;
+    background: #181c22;
+    border-radius: 8px;
+    padding: 9px 10px;
     cursor: pointer;
-    border: 1px solid #333;
+    border: 1px solid #28303d;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
 }
 
 .price-box:active {
-    background: #303136;
+    background: #222933;
     transform: scale(0.99);
 }
 
 .price-label {
-    color: #999;
-    font-size: 12px;
-    margin-bottom: 5px;
+    color: #8c9ba5;
+    font-size: 11px;
+    margin-bottom: 3px;
 }
 
 .price-value {
-    font-size: 21px;
+    font-size: 18px;
     font-weight: bold;
     word-break: break-all;
 }
 
 .copy-hint {
-    color: #777;
-    font-size: 11px;
-    margin-top: 5px;
+    color: #616e7c;
+    font-size: 10px;
+    margin-top: 3px;
 }
 
 .parameters {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    margin-top: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 10px;
 }
 
 .parameter {
-    background: #181818;
-    border-radius: 8px;
-    padding: 10px;
+    background: #15181e;
+    border-radius: 6px;
+    padding: 7px 9px;
+    border: 1px solid #202632;
 }
 
 .parameter-label {
-    color: #888;
-    font-size: 11px;
+    color: #7b8794;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .parameter-value {
-    margin-top: 4px;
-    font-size: 16px;
+    margin-top: 3px;
+    font-size: 14px;
     font-weight: bold;
 }
 
 .parameter-input {
     width: 100%;
-    margin-top: 4px;
-    padding: 4px 6px;
-    background: #090909;
+    margin-top: 3px;
+    padding: 3px 6px;
+    background: #0c0e12;
     border: 1px solid #ffb13b;
     color: #fff;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: bold;
-    border-radius: 5px;
+    border-radius: 4px;
     box-sizing: border-box;
 }
 
@@ -189,10 +284,10 @@ button:active {
 .bot-action-bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid #282828;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #202632;
     align-items: center;
 }
 
@@ -200,16 +295,18 @@ button:active {
     background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
     color: #fff;
     font-weight: bold;
-    font-size: 16px;
-    padding: 11px 20px;
+    font-size: 15px;
+    padding: 10px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 7px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 12px rgba(230, 81, 0, 0.35);
     transition: all 0.2s ease;
+    width: 100%;
+    justify-content: center;
 }
 
 .btn-create-bot:hover {
@@ -558,6 +655,21 @@ tr.selected {
 }
 
 /* MOBILE & SAMSUNG S22 ULTRA OPTIMIZATIONS */
+@media (max-width: 960px) {
+    .rec-chart-layout {
+        flex-direction: column;
+    }
+
+    .best-panel {
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+
+    .chart-canvas-container {
+        min-height: 260px;
+    }
+}
+
 @media (max-width: 800px) {
     .container {
         padding: 8px;
@@ -579,14 +691,14 @@ tr.selected {
     }
 
     .price-value {
-        font-size: 19px;
+        font-size: 18px;
     }
 
     .btn-create-bot {
         width: 100%;
         justify-content: center;
-        padding: 13px 20px;
-        font-size: 17px;
+        padding: 12px 18px;
+        font-size: 15px;
     }
 
     .btn-stop-all {
@@ -606,11 +718,15 @@ tr.selected {
     }
 
     .price-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
     }
 
     .selected-symbol {
-        font-size: 25px;
+        font-size: 22px;
+    }
+
+    .chart-canvas-container {
+        min-height: 220px;
     }
 }
 </style>
@@ -632,106 +748,141 @@ tr.selected {
     </div>
 
 
-    <!-- SELECTED RECOMMENDATION -->
+    <!-- SELECTED RECOMMENDATION & CHART SPLIT -->
+    <div class="rec-chart-layout">
 
-    <div class="best-panel">
+        <!-- LEFT: SELECTED RECOMMENDATION -->
+        <div class="best-panel">
 
-        <div class="best-title">
-            Selected Recommendation
-        </div>
-
-        <div class="selected-symbol" id="selectedSymbol">
-            —
-        </div>
-
-        <div class="selected-subtitle" id="selectedSubtitle">
-            Click any recommended pair below.
-        </div>
-
-
-        <div class="price-grid">
-
-            <div class="price-box"
-                 id="lowerPriceBox"
-                 onclick="copyPrice('lower')">
-
-                <div class="price-label">
-                    Lower Grid Price
+            <div>
+                <div class="best-title">
+                    Selected Recommendation
                 </div>
 
-                <div class="price-value"
-                     id="lowerPrice">
+                <div class="selected-symbol" id="selectedSymbol">
                     —
                 </div>
 
-                <div class="copy-hint">
-                    Tap to copy
+                <div class="selected-subtitle" id="selectedSubtitle">
+                    Click any recommended pair below.
                 </div>
 
+                <div class="price-grid">
+
+                    <div class="price-box"
+                         id="lowerPriceBox"
+                         onclick="copyPrice('lower')">
+
+                        <div class="price-label">
+                            Lower Grid Price
+                        </div>
+
+                        <div class="price-value"
+                             id="lowerPrice">
+                            —
+                        </div>
+
+                        <div class="copy-hint">
+                            Tap to copy
+                        </div>
+
+                    </div>
+
+                    <div class="price-box"
+                         id="upperPriceBox"
+                         onclick="copyPrice('upper')">
+
+                        <div class="price-label">
+                            Upper Grid Price
+                        </div>
+
+                        <div class="price-value"
+                             id="upperPrice">
+                            —
+                        </div>
+
+                        <div class="copy-hint">
+                            Tap to copy
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="parameters">
+
+                    <div class="parameter">
+                        <div class="parameter-label">Grids</div>
+                        <div class="parameter-value" id="gridCount">—</div>
+                    </div>
+
+                    <div class="parameter">
+                        <div class="parameter-label">Profit / Grid</div>
+                        <div class="parameter-value" id="profitGrid">—</div>
+                    </div>
+
+                    <div class="parameter">
+                        <div class="parameter-label">Leverage</div>
+                        <div class="parameter-value" id="leverage" style="color:#ffb13b;">10x</div>
+                    </div>
+
+                    <div class="parameter">
+                        <div class="parameter-label">Investment (USDT)</div>
+                        <input class="parameter-input" id="botInvestmentInput" type="number" min="1" step="1" value="50" placeholder="50">
+                    </div>
+
+                    <div class="parameter">
+                        <div class="parameter-label">Min Investment</div>
+                        <div class="parameter-value" id="minInvestment">—</div>
+                    </div>
+
+                    <div class="parameter">
+                        <div class="parameter-label">Current Price</div>
+                        <div class="parameter-value" id="currentPrice">—</div>
+                    </div>
+
+                </div>
             </div>
 
-
-            <div class="price-box"
-                 id="upperPriceBox"
-                 onclick="copyPrice('upper')">
-
-                <div class="price-label">
-                    Upper Grid Price
-                </div>
-
-                <div class="price-value"
-                     id="upperPrice">
-                    —
-                </div>
-
-                <div class="copy-hint">
-                    Tap to copy
-                </div>
-
+            <div class="bot-action-bar">
+                <button id="btnCreateBot" class="btn-create-bot" onclick="promptCreateGridBot()">
+                    <span>🚀</span> Create Neutral Grid Bot
+                </button>
+                <span id="botActionStatus" style="font-size: 13px; color: #aaa; margin-left: 8px;"></span>
             </div>
 
         </div>
 
+        <!-- RIGHT: CANDLESTICK CHART WITH BOLLINGER BANDS -->
+        <div class="chart-panel">
 
-        <div class="parameters">
+            <div class="chart-header">
+                <div class="chart-title">
+                    <span id="chartSymbolTitle">1000m Chart</span>
+                    <span id="chartCurrentPriceBadge" style="font-size: 12px; color: #ffb13b; font-weight: normal; margin-left: 6px;"></span>
+                </div>
 
-            <div class="parameter">
-                <div class="parameter-label">Grids</div>
-                <div class="parameter-value" id="gridCount">—</div>
+                <div class="chart-legend">
+                    <span class="legend-item">
+                        <span class="legend-color" style="background: rgba(38, 166, 154, 0.9);"></span> Upper BB (20, 2)
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background: rgba(255, 177, 59, 0.8);"></span> Basis SMA 20
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background: rgba(239, 83, 80, 0.9);"></span> Lower BB
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background: #00e5ff; height: 2px;"></span> Grid Bounds
+                    </span>
+                </div>
             </div>
 
-            <div class="parameter">
-                <div class="parameter-label">Profit / Grid</div>
-                <div class="parameter-value" id="profitGrid">—</div>
+            <div class="chart-canvas-container" id="chartCanvasContainer">
+                <canvas id="symbolChartCanvas"></canvas>
+                <div class="chart-tooltip" id="chartTooltip"></div>
             </div>
 
-            <div class="parameter">
-                <div class="parameter-label">Leverage</div>
-                <div class="parameter-value" id="leverage" style="color:#ffb13b;">10x</div>
-            </div>
-
-            <div class="parameter">
-                <div class="parameter-label">Investment (USDT)</div>
-                <input class="parameter-input" id="botInvestmentInput" type="number" min="1" step="1" value="50" placeholder="50">
-            </div>
-
-            <div class="parameter">
-                <div class="parameter-label">Min Investment</div>
-                <div class="parameter-value" id="minInvestment">—</div>
-            </div>
-
-            <div class="parameter">
-                <div class="parameter-label">Current Price</div>
-                <div class="parameter-value" id="currentPrice">—</div>
-            </div>
-
-        </div>
-
-        <div class="bot-action-bar">
-            <button id="btnCreateBot" class="btn-create-bot" onclick="promptCreateGridBot()">
-                <span>🚀</span> Create Neutral Grid Bot
-            </button>
-            <span id="botActionStatus" style="font-size: 13px; color: #aaa; margin-left: 8px;"></span>
         </div>
 
     </div>
@@ -978,6 +1129,8 @@ let errorCount = 0;
 let startTime = 0;
 
 let selectedResult = null;
+
+let candleMap = {};
 
 
 /* =========================================================
@@ -2851,6 +3004,8 @@ async function analyzeSymbol(
         return null;
     }
 
+    // Cache the candles for charting
+    candleMap[symbol] = candles;
 
     return {
 
@@ -2868,6 +3023,8 @@ async function analyzeSymbol(
         grid,
 
         recommendation,
+
+        candles,
 
         totalScore:
             grid.totalScore
@@ -2979,6 +3136,10 @@ function selectResult(result) {
 
     });
 
+    /*
+        Render candlestick chart with Bollinger Bands
+    */
+    renderSymbolChart(result);
 
     addLog(
         "Selected " +
@@ -2987,6 +3148,394 @@ function selectResult(result) {
         "ok"
     );
 }
+
+
+/* =========================================================
+   BOLLINGER BANDS & CHART RENDERING
+========================================================= */
+
+function calculateBollingerBands(candles, period = 20, multiplier = 2) {
+    const upper = [];
+    const lower = [];
+    const middle = [];
+
+    for (let i = 0; i < candles.length; i++) {
+        if (i < period - 1) {
+            upper.push(null);
+            lower.push(null);
+            middle.push(null);
+            continue;
+        }
+
+        let sum = 0;
+        for (let j = 0; j < period; j++) {
+            sum += candles[i - j].close;
+        }
+        const mean = sum / period;
+
+        let varSum = 0;
+        for (let j = 0; j < period; j++) {
+            varSum += Math.pow(candles[i - j].close - mean, 2);
+        }
+        const stdDev = Math.sqrt(varSum / period);
+
+        middle.push(mean);
+        upper.push(mean + multiplier * stdDev);
+        lower.push(mean - multiplier * stdDev);
+    }
+
+    return { middle, upper, lower };
+}
+
+let activeChartData = null;
+
+function renderSymbolChart(result) {
+    if (!result) return;
+
+    const symbol = result.symbol;
+    const candles = result.candles || candleMap[symbol];
+    if (!candles || candles.length === 0) return;
+
+    const titleElem = document.getElementById("chartSymbolTitle");
+    if (titleElem) {
+        titleElem.textContent = symbol + " • 1m (Last " + candles.length + " Candles)";
+    }
+
+    const priceBadge = document.getElementById("chartCurrentPriceBadge");
+    if (priceBadge && result.recommendation) {
+        priceBadge.textContent = "Last: $" + result.recommendation.currentFormatted;
+    }
+
+    const canvas = document.getElementById("symbolChartCanvas");
+    if (!canvas) return;
+
+    const container = document.getElementById("chartCanvasContainer");
+    const width = container.clientWidth || 600;
+    const height = container.clientHeight || 290;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
+    // Margins
+    const topMargin = 20;
+    const bottomMargin = 24;
+    const leftMargin = 10;
+    const rightMargin = 72; // Space for price scale
+
+    const plotWidth = width - leftMargin - rightMargin;
+    const plotHeight = height - topMargin - bottomMargin;
+
+    if (plotWidth <= 10 || plotHeight <= 10) return;
+
+    // Background
+    ctx.fillStyle = "#0c0e12";
+    ctx.fillRect(0, 0, width, height);
+
+    // Calculate Bollinger Bands
+    const bb = calculateBollingerBands(candles, 20, 2);
+
+    // Determine min and max price across candles and Bollinger Bands and Grid bounds
+    const rec = result.recommendation;
+    let minPrice = Infinity;
+    let maxPrice = -Infinity;
+
+    for (let i = 0; i < candles.length; i++) {
+        const c = candles[i];
+        if (c.low < minPrice) minPrice = c.low;
+        if (c.high > maxPrice) maxPrice = c.high;
+
+        if (bb.lower[i] !== null && bb.lower[i] < minPrice) minPrice = bb.lower[i];
+        if (bb.upper[i] !== null && bb.upper[i] > maxPrice) maxPrice = bb.upper[i];
+    }
+
+    if (rec) {
+        if (rec.lower < minPrice) minPrice = rec.lower;
+        if (rec.upper > maxPrice) maxPrice = rec.upper;
+    }
+
+    // Add 4% vertical padding
+    const priceRange = Math.max(maxPrice - minPrice, minPrice * 0.005);
+    minPrice -= priceRange * 0.04;
+    maxPrice += priceRange * 0.04;
+    const finalPriceRange = maxPrice - minPrice;
+
+    function priceToY(price) {
+        return topMargin + plotHeight - ((price - minPrice) / finalPriceRange) * plotHeight;
+    }
+
+    function indexToX(index) {
+        return leftMargin + (index / (candles.length - 1)) * plotWidth;
+    }
+
+    // Grid lines
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+
+    const horizontalGridSteps = 5;
+    for (let i = 0; i <= horizontalGridSteps; i++) {
+        const p = minPrice + (i / horizontalGridSteps) * finalPriceRange;
+        const y = priceToY(p);
+
+        ctx.beginPath();
+        ctx.moveTo(leftMargin, y);
+        ctx.lineTo(leftMargin + plotWidth, y);
+        ctx.stroke();
+
+        // Price scale text on right
+        ctx.fillStyle = "#637182";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(formatBybitPrice(p, rec ? rec.tickSize : 0.0001), leftMargin + plotWidth + 6, y);
+    }
+
+    // Time axis marks
+    const timeSteps = Math.min(5, Math.floor(plotWidth / 100));
+    for (let i = 0; i <= timeSteps; i++) {
+        const cIndex = Math.floor((i / timeSteps) * (candles.length - 1));
+        const x = indexToX(cIndex);
+
+        ctx.beginPath();
+        ctx.moveTo(x, topMargin);
+        ctx.lineTo(x, topMargin + plotHeight);
+        ctx.stroke();
+
+        const d = new Date(candles[cIndex].time);
+        const timeStr = d.getHours().toString().padStart(2, "0") + ":" + d.getMinutes().toString().padStart(2, "0");
+        ctx.fillStyle = "#637182";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(timeStr, x, topMargin + plotHeight + 5);
+    }
+
+    // Draw Bollinger Bands Area Shading
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < candles.length; i++) {
+        if (bb.upper[i] !== null) {
+            const x = indexToX(i);
+            const y = priceToY(bb.upper[i]);
+            if (!started) {
+                ctx.moveTo(x, y);
+                started = true;
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+    }
+    for (let i = candles.length - 1; i >= 0; i--) {
+        if (bb.lower[i] !== null) {
+            const x = indexToX(i);
+            const y = priceToY(bb.lower[i]);
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.closePath();
+    ctx.fillStyle = "rgba(0, 150, 136, 0.07)";
+    ctx.fill();
+
+    // Draw Bollinger Upper Band line
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "rgba(38, 166, 154, 0.85)";
+    ctx.beginPath();
+    started = false;
+    for (let i = 0; i < candles.length; i++) {
+        if (bb.upper[i] !== null) {
+            const x = indexToX(i);
+            const y = priceToY(bb.upper[i]);
+            if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+        }
+    }
+    ctx.stroke();
+
+    // Draw Bollinger Lower Band line
+    ctx.strokeStyle = "rgba(239, 83, 80, 0.85)";
+    ctx.beginPath();
+    started = false;
+    for (let i = 0; i < candles.length; i++) {
+        if (bb.lower[i] !== null) {
+            const x = indexToX(i);
+            const y = priceToY(bb.lower[i]);
+            if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+        }
+    }
+    ctx.stroke();
+
+    // Draw Bollinger Basis (SMA 20) line
+    ctx.strokeStyle = "rgba(255, 177, 59, 0.75)";
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    started = false;
+    for (let i = 0; i < candles.length; i++) {
+        if (bb.middle[i] !== null) {
+            const x = indexToX(i);
+            const y = priceToY(bb.middle[i]);
+            if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+        }
+    }
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset dash
+
+    // Draw Candlesticks (or Price Line if candle count is dense)
+    const candleSpacing = plotWidth / candles.length;
+    const candleWidth = Math.max(1, candleSpacing * 0.7);
+
+    for (let i = 0; i < candles.length; i++) {
+        const c = candles[i];
+        const x = indexToX(i);
+        const yOpen = priceToY(c.open);
+        const yClose = priceToY(c.close);
+        const yHigh = priceToY(c.high);
+        const yLow = priceToY(c.low);
+
+        const isUp = c.close >= c.open;
+        const color = isUp ? "#26a69a" : "#ef5350";
+
+        // Draw Wick
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, yHigh);
+        ctx.lineTo(x, yLow);
+        ctx.stroke();
+
+        // Draw Body
+        ctx.fillStyle = color;
+        const bodyTop = Math.min(yOpen, yClose);
+        const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
+        ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+    }
+
+    // Draw Recommended Neutral Grid Bounds
+    if (rec) {
+        // Upper Grid Limit Line
+        const yUpperGrid = priceToY(rec.upper);
+        ctx.strokeStyle = "#00e5ff";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(leftMargin, yUpperGrid);
+        ctx.lineTo(leftMargin + plotWidth, yUpperGrid);
+        ctx.stroke();
+
+        // Lower Grid Limit Line
+        const yLowerGrid = priceToY(rec.lower);
+        ctx.beginPath();
+        ctx.moveTo(leftMargin, yLowerGrid);
+        ctx.lineTo(leftMargin + plotWidth, yLowerGrid);
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset dash
+
+        // Draw badges on price scale
+        ctx.fillStyle = "#00e5ff";
+        ctx.font = "bold 9px sans-serif";
+        ctx.fillText("▲ Upper " + rec.upperFormatted, leftMargin + plotWidth + 6, yUpperGrid - 4);
+        ctx.fillText("▼ Lower " + rec.lowerFormatted, leftMargin + plotWidth + 6, yLowerGrid + 10);
+    }
+
+    // Current Price Line
+    const currentPrice = rec ? rec.currentPrice : candles[candles.length - 1].close;
+    const yCurrent = priceToY(currentPrice);
+    ctx.strokeStyle = "#ffb13b";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(leftMargin, yCurrent);
+    ctx.lineTo(leftMargin + plotWidth, yCurrent);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Badge for current price
+    ctx.fillStyle = "#ffb13b";
+    ctx.fillRect(leftMargin + plotWidth + 2, yCurrent - 8, rightMargin - 4, 16);
+    ctx.fillStyle = "#000";
+    ctx.font = "bold 9px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(formatBybitPrice(currentPrice, rec ? rec.tickSize : 0.0001), leftMargin + plotWidth + 6, yCurrent);
+
+    // Store active data for hover interactions
+    activeChartData = {
+        candles,
+        bb,
+        rec,
+        leftMargin,
+        plotWidth,
+        priceToY,
+        indexToX
+    };
+}
+
+// Chart hover tooltip handler
+(function setupChartInteractions() {
+    const canvas = document.getElementById("symbolChartCanvas");
+    const tooltip = document.getElementById("chartTooltip");
+    if (!canvas || !tooltip) return;
+
+    function handlePointer(evt) {
+        if (!activeChartData || !activeChartData.candles || activeChartData.candles.length === 0) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+
+        const x = clientX - rect.left;
+        const { leftMargin, plotWidth, candles, bb, rec } = activeChartData;
+
+        if (x < leftMargin || x > leftMargin + plotWidth) {
+            tooltip.style.display = "none";
+            return;
+        }
+
+        const ratio = (x - leftMargin) / plotWidth;
+        const index = Math.max(0, Math.min(candles.length - 1, Math.round(ratio * (candles.length - 1))));
+        const c = candles[index];
+        const date = new Date(c.time);
+        const timeStr = date.toLocaleTimeString();
+
+        const upperBB = bb.upper[index] !== null ? formatBybitPrice(bb.upper[index], rec ? rec.tickSize : 0.001) : "—";
+        const midBB = bb.middle[index] !== null ? formatBybitPrice(bb.middle[index], rec ? rec.tickSize : 0.001) : "—";
+        const lowerBB = bb.lower[index] !== null ? formatBybitPrice(bb.lower[index], rec ? rec.tickSize : 0.001) : "—";
+
+        tooltip.innerHTML = `
+            <div style="font-weight:bold; color:#ffb13b; margin-bottom:2px;">${timeStr}</div>
+            <div>O: ${c.open} &nbsp; H: ${c.high}</div>
+            <div>L: ${c.low} &nbsp; C: ${c.close}</div>
+            <div style="color:#26a69a; margin-top:2px;">Upper BB: ${upperBB}</div>
+            <div style="color:#ffb13b;">Basis: ${midBB}</div>
+            <div style="color:#ef5350;">Lower BB: ${lowerBB}</div>
+        `;
+
+        tooltip.style.display = "block";
+        const tooltipX = Math.min(rect.width - 150, Math.max(10, x - 60));
+        tooltip.style.left = tooltipX + "px";
+        tooltip.style.top = "10px";
+    }
+
+    canvas.addEventListener("mousemove", handlePointer);
+    canvas.addEventListener("touchmove", handlePointer, { passive: true });
+
+    function hideTooltip() {
+        tooltip.style.display = "none";
+    }
+
+    canvas.addEventListener("mouseleave", hideTooltip);
+    canvas.addEventListener("touchend", hideTooltip);
+
+    // Responsive resize listener
+    window.addEventListener("resize", () => {
+        if (selectedResult) {
+            renderSymbolChart(selectedResult);
+        }
+    });
+})();
 
 
 /* =========================================================
@@ -3175,6 +3724,7 @@ async function startScan() {
     symbols = [];
     tickerMap = {};
     instrumentMap = {};
+    candleMap = {};
     selectedResult = null;
 
     requestCount = 0;
