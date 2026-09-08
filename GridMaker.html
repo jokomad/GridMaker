@@ -1,0 +1,3977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Bybit Neutral Grid Scanner</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    background: #060709;
+    color: #eee;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 1500px;
+    margin: auto;
+    padding: 10px;
+}
+
+/* SLEEK STATUS BAR */
+.status-bar-card {
+    background: #111418;
+    border: 1px solid #232730;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: #aab;
+}
+
+.status-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #73dc73;
+    display: inline-block;
+    box-shadow: 0 0 8px #73dc73;
+    animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+button,
+input {
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+button {
+    background: #252525;
+    color: white;
+    padding: 10px 14px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.best-panel {
+    background: #101216;
+    border: 1px solid #262b35;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.best-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.selected-symbol {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffb13b;
+    line-height: 1.1;
+}
+
+.selected-subtitle {
+    color: #999;
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+.price-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.price-box {
+    background: #202126;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    border: 1px solid #333;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.price-box:active {
+    background: #303136;
+    transform: scale(0.99);
+}
+
+.price-label {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.price-value {
+    font-size: 21px;
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.copy-hint {
+    color: #777;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.parameters {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.parameter {
+    background: #181818;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.parameter-label {
+    color: #888;
+    font-size: 11px;
+}
+
+.parameter-value {
+    margin-top: 4px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.parameter-input {
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 6px;
+    background: #090909;
+    border: 1px solid #ffb13b;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+/* BOT ACTION BAR */
+.bot-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #282828;
+    align-items: center;
+}
+
+.btn-create-bot {
+    background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(230, 81, 0, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-create-bot:hover {
+    background: linear-gradient(135deg, #ffa726 0%, #f57c00 100%);
+    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.45);
+    transform: translateY(-1px);
+}
+
+.btn-create-bot:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-bybit-web {
+    background: #252830;
+    color: #ffd166;
+    border: 1px solid #444a59;
+    font-size: 13px;
+    padding: 11px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.btn-bybit-web:hover {
+    background: #333845;
+    color: #fff;
+}
+
+/* ACTIVE BOTS & PNL DASHBOARD */
+.pnl-panel {
+    background: #111417;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.pnl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.pnl-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pnl-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.btn-stop-all {
+    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(183, 28, 28, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-stop-all:hover {
+    background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+    transform: translateY(-1px);
+}
+
+.btn-stop-all:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pnl-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.pnl-stat-card {
+    background: #181d24;
+    border-radius: 8px;
+    padding: 10px 14px;
+    border: 1px solid #252e3d;
+}
+
+.pnl-stat-label {
+    color: #8c9ba5;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pnl-stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.pnl-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #252e3d;
+    border-radius: 8px;
+}
+
+.btn-stop-bot {
+    background: #441a1a;
+    color: #ff9e9e;
+    border: 1px solid #772b2b;
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.btn-stop-bot:hover {
+    background: #662222;
+    color: #fff;
+}
+
+/* CONFIRM MODAL */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: #18181c;
+    border: 1px solid #444;
+    border-radius: 12px;
+    max-width: 460px;
+    width: 90%;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+.modal-title {
+    font-size: 19px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 14px;
+}
+
+.modal-details {
+    background: #0f1013;
+    border: 1px solid #2b2c34;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.modal-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #222;
+    padding: 4px 0;
+}
+
+.modal-row:last-child {
+    border-bottom: none;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    background: #2a2a2a;
+    color: #ddd;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    background: #ff9800;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-confirm.danger {
+    background: #d32f2f;
+    color: #fff;
+}
+
+.copy-message {
+    position: fixed;
+    left: 50%;
+    bottom: 25px;
+    transform: translateX(-50%);
+    background: #222;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 20px;
+    display: none;
+    z-index: 9999;
+    box-shadow: 0 3px 15px rgba(0,0,0,.5);
+}
+
+.section-title {
+    margin: 15px 0 8px;
+    font-size: 17px;
+}
+
+.log {
+    background: #080808;
+    border: 1px solid #292929;
+    border-radius: 8px;
+    height: 180px;
+    overflow-y: auto;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 11px;
+    margin-bottom: 12px;
+}
+
+.log-line {
+    margin-bottom: 3px;
+}
+
+.log-ok {
+    color: #78d878;
+}
+
+.log-error {
+    color: #ff6c6c;
+}
+
+.log-info {
+    color: #aaa;
+}
+
+.log-warning {
+    color: #ffc45c;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #292929;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1100px;
+}
+
+th {
+    background: #191919;
+    color: #aaa;
+    text-align: left;
+    padding: 9px 7px;
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+}
+
+td {
+    padding: 8px 7px;
+    border-top: 1px solid #242424;
+    font-size: 12px;
+}
+
+tr {
+    cursor: pointer;
+}
+
+tr:hover {
+    background: #191919;
+}
+
+tr.selected {
+    background: #29220f;
+}
+
+.symbol {
+    font-weight: bold;
+    color: #ffb13b;
+}
+
+.score {
+    font-weight: bold;
+}
+
+.good {
+    color: #73dc73;
+}
+
+.medium {
+    color: #ffd166;
+}
+
+.bad {
+    color: #ff7777;
+}
+
+.rec-badge {
+    display: inline-block;
+    background: #243d27;
+    color: #8ee88e;
+    border-radius: 5px;
+    padding: 3px 6px;
+    font-size: 10px;
+}
+
+.no-results {
+    padding: 20px;
+    text-align: center;
+    color: #777;
+}
+
+/* MOBILE & SAMSUNG S22 ULTRA OPTIMIZATIONS */
+@media (max-width: 800px) {
+    .container {
+        padding: 8px;
+    }
+
+    .parameters {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    .pnl-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .price-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .price-value {
+        font-size: 19px;
+    }
+
+    .btn-create-bot {
+        width: 100%;
+        justify-content: center;
+        padding: 13px 20px;
+        font-size: 17px;
+    }
+
+    .btn-stop-all {
+        padding: 9px 14px;
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 8px 6px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .parameters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .price-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .selected-symbol {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- REFRESH INFO STATUS BAR -->
+    <div class="status-bar-card">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="status-indicator-dot"></span>
+            <span id="status" style="font-weight: 500;">Starting scan...</span>
+        </div>
+        <button onclick="restartScan()" style="padding: 5px 12px; font-size: 12px; background: #1c212a; border: 1px solid #333d4e; border-radius: 6px; color: #ffb13b;">
+            ↻ Refresh
+        </button>
+    </div>
+
+
+    <!-- SELECTED RECOMMENDATION -->
+
+    <div class="best-panel">
+
+        <div class="best-title">
+            Selected Recommendation
+        </div>
+
+        <div class="selected-symbol" id="selectedSymbol">
+            —
+        </div>
+
+        <div class="selected-subtitle" id="selectedSubtitle">
+            Click any recommended pair below.
+        </div>
+
+
+        <div class="price-grid">
+
+            <div class="price-box"
+                 id="lowerPriceBox"
+                 onclick="copyPrice('lower')">
+
+                <div class="price-label">
+                    Lower Grid Price
+                </div>
+
+                <div class="price-value"
+                     id="lowerPrice">
+                    —
+                </div>
+
+                <div class="copy-hint">
+                    Tap to copy
+                </div>
+
+            </div>
+
+
+            <div class="price-box"
+                 id="upperPriceBox"
+                 onclick="copyPrice('upper')">
+
+                <div class="price-label">
+                    Upper Grid Price
+                </div>
+
+                <div class="price-value"
+                     id="upperPrice">
+                    —
+                </div>
+
+                <div class="copy-hint">
+                    Tap to copy
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="parameters">
+
+            <div class="parameter">
+                <div class="parameter-label">Grids</div>
+                <div class="parameter-value" id="gridCount">—</div>
+            </div>
+
+            <div class="parameter">
+                <div class="parameter-label">Profit / Grid</div>
+                <div class="parameter-value" id="profitGrid">—</div>
+            </div>
+
+            <div class="parameter">
+                <div class="parameter-label">Leverage</div>
+                <div class="parameter-value" id="leverage" style="color:#ffb13b;">10x</div>
+            </div>
+
+            <div class="parameter">
+                <div class="parameter-label">Investment (USDT)</div>
+                <input class="parameter-input" id="botInvestmentInput" type="number" min="1" step="1" value="50" placeholder="50">
+            </div>
+
+            <div class="parameter">
+                <div class="parameter-label">Min Investment</div>
+                <div class="parameter-value" id="minInvestment">—</div>
+            </div>
+
+            <div class="parameter">
+                <div class="parameter-label">Current Price</div>
+                <div class="parameter-value" id="currentPrice">—</div>
+            </div>
+
+        </div>
+
+        <div class="bot-action-bar">
+            <button id="btnCreateBot" class="btn-create-bot" onclick="promptCreateGridBot()">
+                <span>🚀</span> Create Neutral Grid Bot
+            </button>
+            <span id="botActionStatus" style="font-size: 13px; color: #aaa; margin-left: 8px;"></span>
+        </div>
+
+    </div>
+
+
+    <!-- ACTIVE GRID BOTS & PNL DASHBOARD -->
+    <div class="pnl-panel">
+
+        <div class="pnl-header">
+            <div class="pnl-title-group">
+                <span style="font-size: 20px;">📊</span>
+                <span class="pnl-title">Active Grid Bots & Total PnL</span>
+            </div>
+
+            <button id="btnStopAllBots" class="btn-stop-all" onclick="promptStopAllBots()">
+                🛑 Stop All Grid Bots
+            </button>
+        </div>
+
+        <div class="pnl-stats-grid">
+            <div class="pnl-stat-card">
+                <div class="pnl-stat-label">Total PnL</div>
+                <div class="pnl-stat-value" id="totalPnlValue">$0.00</div>
+            </div>
+
+            <div class="pnl-stat-card">
+                <div class="pnl-stat-label">Total Return</div>
+                <div class="pnl-stat-value" id="totalPnlPercent">0.00%</div>
+            </div>
+
+            <div class="pnl-stat-card">
+                <div class="pnl-stat-label">Active Bots</div>
+                <div class="pnl-stat-value" id="activeBotsCount">0</div>
+            </div>
+
+            <div class="pnl-stat-card">
+                <div class="pnl-stat-label">Total Allocated Capital</div>
+                <div class="pnl-stat-value" id="totalAllocatedCapital">$0.00</div>
+            </div>
+        </div>
+
+        <div class="pnl-table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Type / Leverage</th>
+                        <th>Lower Price</th>
+                        <th>Upper Price</th>
+                        <th>Grids</th>
+                        <th>Investment</th>
+                        <th>Current Price</th>
+                        <th>PnL ($)</th>
+                        <th>PnL (%)</th>
+                        <th>Runtime</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="activeBotsBody">
+                    <tr>
+                        <td colspan="11" class="no-results">
+                            No active grid bots running yet. Click "Create Neutral Grid Bot" above to start one.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+
+    <!-- RECOMMENDED PAIRS -->
+    <div class="section-title">
+        Recommended Pairs
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Symbol</th>
+                    <th>Score</th>
+                    <th>24h Volume</th>
+                    <th>Price</th>
+                    <th>Lower</th>
+                    <th>Upper</th>
+                    <th>Grids</th>
+                    <th>Profit/Grid</th>
+                    <th>Trades</th>
+                    <th>Win Rate</th>
+                    <th>Drawdown</th>
+                    <th>Grid Spacing</th>
+                </tr>
+            </thead>
+
+            <tbody id="resultsBody">
+
+                <tr>
+                    <td colspan="13" class="no-results">
+                        Waiting for scan...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- SCANNER LOG (AT BOTTOM) -->
+    <div class="section-title">
+        Scanner Log
+    </div>
+
+    <div class="log" id="log"></div>
+
+</div>
+
+
+<div class="copy-message" id="copyMessage">
+    Copied
+</div>
+
+<!-- CREATE BOT CONFIRMATION MODAL -->
+<div id="createBotModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-title">🚀 Launch Neutral Grid Bot</div>
+        <div class="modal-details">
+            <div class="modal-row">
+                <span style="color: #888;">Symbol:</span>
+                <span id="modalBotSymbol" style="font-weight: bold; color: #ffb13b;">—</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Strategy:</span>
+                <span>Neutral Futures Grid</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Leverage:</span>
+                <span style="font-weight: bold; color: #73dc73;">10x</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Lower Grid Price:</span>
+                <span id="modalBotLower" style="font-weight: bold;">—</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Upper Grid Price:</span>
+                <span id="modalBotUpper" style="font-weight: bold;">—</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Number of Grids:</span>
+                <span id="modalBotGrids" style="font-weight: bold;">—</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Profit / Grid:</span>
+                <span id="modalBotProfitGrid" style="color: #ffd166;">—</span>
+            </div>
+            <div class="modal-row">
+                <span style="color: #888;">Investment Capital:</span>
+                <span id="modalBotInvestment" style="font-weight: bold; color: #73dc73;">50 USDT</span>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeCreateBotModal()">Cancel</button>
+            <button class="btn-confirm" id="btnConfirmCreateBot" onclick="confirmCreateGridBot()">Confirm & Start</button>
+        </div>
+    </div>
+</div>
+
+<!-- STOP ALL CONFIRMATION MODAL -->
+<div id="stopAllModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-title" style="color: #ff6c6c;">🛑 Stop All Grid Bots?</div>
+        <p style="color: #bbb; font-size: 14px; margin: 10px 0 16px;">
+            This will stop all running grid bots and cancel all open grid orders on Bybit.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeStopAllModal()">Cancel</button>
+            <button class="btn-confirm danger" id="btnConfirmStopAll" onclick="confirmStopAllBots()">Yes, Stop All</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+"use strict";
+
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const API = "https://api.bybit.com";
+
+const MIN_VOLUME = 1_000_000;
+
+const CANDLE_COUNT = 1000;
+
+const FEE_RATE = 0.0006;
+
+const SIM_CAPITAL = 1000;
+
+const LEVERAGE = 10;
+
+/*
+    Candidate grid spacings tested by the scanner.
+*/
+const GRID_SPACINGS = [
+    0.0025,
+    0.0050,
+    0.0075,
+    0.0100,
+    0.0150,
+    0.0200
+];
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let scanId = 0;
+
+let stopRequested = false;
+
+let results = [];
+
+let symbols = [];
+
+let tickerMap = {};
+
+let instrumentMap = {};
+
+let requestCount = 0;
+
+let successCount = 0;
+
+let errorCount = 0;
+
+let startTime = 0;
+
+let selectedResult = null;
+
+
+/* =========================================================
+   LOGGING
+========================================================= */
+
+function addLog(message, type = "info") {
+    const log = document.getElementById("log");
+    if (!log) return;
+
+    const line = document.createElement("div");
+    line.className = "log-line log-" + type;
+
+    const now = new Date();
+    const time = now.toLocaleTimeString();
+
+    line.textContent = "[" + time + "] " + message;
+    log.appendChild(line);
+
+    // Keep log memory light (max 100 elements)
+    while (log.childElementCount > 100) {
+        log.removeChild(log.firstChild);
+    }
+
+    log.scrollTop = log.scrollHeight;
+}
+
+
+window.onerror = function(message, source, lineno, colno) {
+
+    addLog(
+        "JAVASCRIPT ERROR: " +
+        message +
+        " line " +
+        lineno,
+        "error"
+    );
+
+};
+
+
+window.addEventListener(
+    "unhandledrejection",
+    function(event) {
+
+        addLog(
+            "UNHANDLED PROMISE ERROR: " +
+            event.reason,
+            "error"
+        );
+
+    }
+);
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function sleep(ms) {
+
+    return new Promise(resolve =>
+        setTimeout(resolve, ms)
+    );
+
+}
+
+
+function getBatchSize() {
+    const elem = document.getElementById("batchSize");
+    let n = elem ? parseInt(elem.value) : 120;
+
+    if (!Number.isFinite(n)) {
+        n = 120;
+    }
+
+    n = Math.max(1, Math.min(120, n));
+    return n;
+}
+
+
+function getBatchPause() {
+    const elem = document.getElementById("batchPause");
+    let n = elem ? parseInt(elem.value) : 1000;
+
+    if (!Number.isFinite(n)) {
+        n = 1000;
+    }
+
+    n = Math.max(0, Math.min(10000, n));
+    return n;
+}
+
+
+function formatMoney(value) {
+
+    if (!Number.isFinite(value)) {
+        return "—";
+    }
+
+    if (Math.abs(value) >= 1e9) {
+        return (value / 1e9).toFixed(2) + "B";
+    }
+
+    if (Math.abs(value) >= 1e6) {
+        return (value / 1e6).toFixed(2) + "M";
+    }
+
+    if (Math.abs(value) >= 1e3) {
+        return (value / 1e3).toFixed(2) + "K";
+    }
+
+    return value.toFixed(2);
+}
+
+
+function formatPercent(value, decimals = 2) {
+
+    if (!Number.isFinite(value)) {
+        return "—";
+    }
+
+    return value.toFixed(decimals) + "%";
+}
+
+
+/* =========================================================
+   BYBIT PRICE FORMATTING
+========================================================= */
+
+/*
+    Get number of decimal places from Bybit tickSize.
+*/
+
+function decimalsFromTickSize(tickSize) {
+
+    if (!tickSize) {
+        return 8;
+    }
+
+    const s = String(tickSize);
+
+    if (s.includes("e-")) {
+
+        const parts = s.split("e-");
+
+        return parseInt(parts[1]) || 8;
+    }
+
+    if (!s.includes(".")) {
+        return 0;
+    }
+
+    return s.split(".")[1].length;
+}
+
+
+/*
+    Snap a price exactly to Bybit's tick size.
+*/
+
+function snapToTick(price, tickSize) {
+
+    const tick = Number(tickSize);
+
+    if (!Number.isFinite(price) ||
+        !Number.isFinite(tick) ||
+        tick <= 0) {
+
+        return price;
+    }
+
+    const snapped =
+        Math.round(price / tick) * tick;
+
+    const decimals =
+        decimalsFromTickSize(tickSize);
+
+    return Number(
+        snapped.toFixed(decimals)
+    );
+}
+
+
+/*
+    Format price using exactly the same decimal
+    precision implied by Bybit's tick size.
+*/
+
+function formatBybitPrice(price, tickSize) {
+
+    if (!Number.isFinite(price)) {
+        return "—";
+    }
+
+    const tick = Number(tickSize);
+
+    if (!Number.isFinite(tick) || tick <= 0) {
+
+        return String(price);
+    }
+
+    const decimals =
+        decimalsFromTickSize(tickSize);
+
+    const snapped =
+        snapToTick(price, tickSize);
+
+    return snapped.toFixed(decimals);
+}
+
+
+/* =========================================================
+   ANDROID-SAFE CLIPBOARD
+========================================================= */
+
+async function copyText(text) {
+
+    if (!text || text === "—") {
+        return false;
+    }
+
+
+    /*
+        First try modern clipboard API.
+    */
+
+    try {
+
+        if (
+            navigator.clipboard &&
+            typeof navigator.clipboard.writeText === "function"
+        ) {
+
+            await navigator.clipboard.writeText(text);
+
+            return true;
+        }
+
+    } catch (e) {
+
+        addLog(
+            "Modern clipboard unavailable; using Android fallback.",
+            "warning"
+        );
+
+    }
+
+
+    /*
+        Android Chrome fallback.
+
+        execCommand is deprecated but is still useful
+        for older/non-secure contexts where clipboard API
+        is blocked.
+    */
+
+    try {
+
+        const textarea =
+            document.createElement("textarea");
+
+        textarea.value = text;
+
+        textarea.setAttribute("readonly", "");
+
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        textarea.style.top = "0";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(textarea);
+
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(
+            0,
+            textarea.value.length
+        );
+
+        const successful =
+            document.execCommand("copy");
+
+        document.body.removeChild(textarea);
+
+        return successful;
+
+    } catch (e) {
+
+        addLog(
+            "Clipboard fallback failed: " +
+            e,
+            "error"
+        );
+
+        return false;
+    }
+
+}
+
+
+async function copyPrice(which) {
+
+    if (!selectedResult) {
+        return;
+    }
+
+    let value;
+
+    if (which === "lower") {
+
+        value =
+            selectedResult.recommendation.lowerFormatted;
+
+    } else {
+
+        value =
+            selectedResult.recommendation.upperFormatted;
+    }
+
+
+    const ok =
+        await copyText(value);
+
+
+    const message =
+        document.getElementById("copyMessage");
+
+
+    if (ok) {
+
+        message.textContent =
+            value + " copied";
+
+        message.style.display = "block";
+
+        setTimeout(() => {
+
+            message.style.display = "none";
+
+        }, 1300);
+
+
+        addLog(
+            "Copied " +
+            value +
+            " to clipboard.",
+            "ok"
+        );
+
+    } else {
+
+        message.textContent =
+            "Copy failed";
+
+        message.style.display = "block";
+
+        setTimeout(() => {
+
+            message.style.display = "none";
+
+        }, 1500);
+
+
+        /*
+            As a last resort, select the text.
+            Android users can then copy manually.
+        */
+
+        addLog(
+            "Clipboard copy failed for " +
+            value +
+            ".",
+            "error"
+        );
+    }
+
+}
+
+
+/* =========================================================
+   API REQUEST
+========================================================= */
+
+async function apiRequest(path, retries = 5) {
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+
+        requestCount++;
+
+        try {
+
+            const response =
+                await fetch(API + path, {
+                    cache: "no-store"
+                });
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "HTTP " + response.status
+                );
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (data.retCode !== 0) {
+
+                throw new Error(
+                    "Bybit " +
+                    data.retCode +
+                    ": " +
+                    data.retMsg
+                );
+            }
+
+
+            successCount++;
+
+            return data;
+
+        } catch (error) {
+
+            errorCount++;
+
+            if (attempt === retries - 1) {
+
+                throw error;
+            }
+
+
+            /*
+                Rate limit / temporary error backoff.
+            */
+
+            const delay =
+                Math.min(
+                    5000,
+                    250 * Math.pow(2, attempt)
+                );
+
+            await sleep(delay);
+        }
+    }
+
+}
+
+
+/* =========================================================
+   API TEST
+========================================================= */
+
+async function testAPI() {
+
+    addLog(
+        "Testing Bybit API...",
+        "info"
+    );
+
+    const data =
+        await apiRequest(
+            "/v5/market/time"
+        );
+
+    if (data &&
+        data.retCode === 0) {
+
+        addLog(
+            "Bybit API connection OK.",
+            "ok"
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+
+/* =========================================================
+   GET INSTRUMENTS
+========================================================= */
+
+async function getSymbols() {
+
+    addLog(
+        "Loading Bybit linear instruments...",
+        "info"
+    );
+
+
+    let cursor = "";
+
+    let all = [];
+
+
+    do {
+
+        let url =
+            "/v5/market/instruments-info" +
+            "?category=linear" +
+            "&limit=1000";
+
+
+        if (cursor) {
+
+            url +=
+                "&cursor=" +
+                encodeURIComponent(cursor);
+        }
+
+
+        const data =
+            await apiRequest(url);
+
+
+        const list =
+            data.result.list || [];
+
+
+        all.push(...list);
+
+
+        cursor =
+            data.result.nextPageCursor || "";
+
+
+    } while (cursor);
+
+
+    instrumentMap = {};
+
+
+    const filtered =
+        all.filter(item => {
+
+            const ok =
+                item.status === "Trading" &&
+                item.quoteCoin === "USDT" &&
+                item.contractType === "LinearPerpetual" &&
+                item.symbol.endsWith("USDT");
+
+
+            if (ok) {
+
+                instrumentMap[item.symbol] =
+                    item;
+            }
+
+
+            return ok;
+        });
+
+
+    addLog(
+        "Found " +
+        filtered.length +
+        " USDT linear perpetual symbols.",
+        "ok"
+    );
+
+
+    return filtered.map(x => x.symbol);
+}
+
+
+/* =========================================================
+   GET TICKERS
+========================================================= */
+
+async function getTickers() {
+
+    addLog(
+        "Loading 24h ticker data...",
+        "info"
+    );
+
+
+    const data =
+        await apiRequest(
+            "/v5/market/tickers?category=linear"
+        );
+
+
+    tickerMap = {};
+
+
+    for (const ticker of data.result.list || []) {
+
+        tickerMap[ticker.symbol] =
+            ticker;
+    }
+
+
+    addLog(
+        "Ticker data loaded.",
+        "ok"
+    );
+}
+
+
+/* =========================================================
+   GET CANDLES
+========================================================= */
+
+async function getCandles(symbol) {
+
+    const url =
+        "/v5/market/kline" +
+        "?category=linear" +
+        "&symbol=" +
+        encodeURIComponent(symbol) +
+        "&interval=1" +
+        "&limit=" +
+        CANDLE_COUNT;
+
+
+    const data =
+        await apiRequest(url);
+
+
+    const rows =
+        data.result.list || [];
+
+
+    /*
+        Bybit returns newest first.
+        Convert to oldest -> newest.
+    */
+
+    rows.reverse();
+
+
+    return rows.map(row => ({
+
+        time: Number(row[0]),
+
+        open: Number(row[1]),
+
+        high: Number(row[2]),
+
+        low: Number(row[3]),
+
+        close: Number(row[4]),
+
+        volume: Number(row[5]),
+
+        turnover: Number(row[6])
+
+    }));
+
+}
+
+
+/* =========================================================
+   CANDLE ANALYSIS
+========================================================= */
+
+function analyzeCandles(candles) {
+
+    if (!candles ||
+        candles.length < 100) {
+
+        return null;
+    }
+
+
+    let totalRange = 0;
+
+    let totalBody = 0;
+
+    let totalUpper = 0;
+
+    let totalLower = 0;
+
+    let up = 0;
+
+    let down = 0;
+
+    let largeMoves = 0;
+
+    let reversals = 0;
+
+
+    const returns = [];
+
+
+    for (let i = 0;
+         i < candles.length;
+         i++) {
+
+        const c =
+            candles[i];
+
+
+        const range =
+            Math.max(
+                0,
+                c.high - c.low
+            );
+
+
+        const body =
+            Math.abs(
+                c.close - c.open
+            );
+
+
+        const upper =
+            Math.max(
+                0,
+                c.high -
+                Math.max(c.open, c.close)
+            );
+
+
+        const lower =
+            Math.max(
+                0,
+                Math.min(c.open, c.close) -
+                c.low
+            );
+
+
+        totalRange += range;
+
+        totalBody += body;
+
+        totalUpper += upper;
+
+        totalLower += lower;
+
+
+        if (c.close > c.open) {
+            up++;
+        }
+
+        if (c.close < c.open) {
+            down++;
+        }
+
+
+        if (c.open > 0) {
+
+            const move =
+                Math.abs(
+                    c.close - c.open
+                ) / c.open;
+
+
+            if (move >= 0.005) {
+                largeMoves++;
+            }
+
+            returns.push(
+                (c.close - c.open) /
+                c.open
+            );
+        }
+
+
+        if (i > 0) {
+
+            const previous =
+                candles[i - 1];
+
+
+            const prevDir =
+                Math.sign(
+                    previous.close -
+                    previous.open
+                );
+
+
+            const dir =
+                Math.sign(
+                    c.close -
+                    c.open
+                );
+
+
+            if (
+                prevDir !== 0 &&
+                dir !== 0 &&
+                prevDir !== dir
+            ) {
+
+                reversals++;
+            }
+        }
+
+    }
+
+
+    const n =
+        candles.length;
+
+
+    const avgRange =
+        totalRange / n;
+
+
+    const avgBody =
+        totalBody / n;
+
+
+    const avgUpper =
+        totalUpper / n;
+
+
+    const avgLower =
+        totalLower / n;
+
+
+    const wickRatio =
+        (
+            avgUpper +
+            avgLower
+        ) / Math.max(
+            avgRange,
+            1e-12
+        );
+
+
+    const totalDirectional =
+        up + down;
+
+
+    const balance =
+        totalDirectional > 0
+            ? 1 -
+              Math.abs(up - down) /
+              totalDirectional
+            : 0;
+
+
+    const first =
+        candles[0].close;
+
+
+    const last =
+        candles[candles.length - 1].close;
+
+
+    const netMove =
+        first > 0
+            ? Math.abs(
+                last - first
+              ) / first
+            : 0;
+
+
+    let path = 0;
+
+
+    for (let i = 1;
+         i < candles.length;
+         i++) {
+
+        const a =
+            candles[i - 1].close;
+
+        const b =
+            candles[i].close;
+
+        if (a > 0) {
+
+            path +=
+                Math.abs(
+                    b - a
+                ) / a;
+        }
+    }
+
+
+    const efficiency =
+        path > 0
+            ? netMove / path
+            : 0;
+
+
+    const reversalRate =
+        n > 1
+            ? reversals / (n - 1)
+            : 0;
+
+
+    let mean = 0;
+
+    for (const r of returns) {
+        mean += r;
+    }
+
+    mean /=
+        Math.max(
+            returns.length,
+            1
+        );
+
+
+    let variance = 0;
+
+    for (const r of returns) {
+
+        variance +=
+            Math.pow(
+                r - mean,
+                2
+            );
+    }
+
+
+    variance /=
+        Math.max(
+            returns.length,
+            1
+        );
+
+
+    const volatility =
+        Math.sqrt(variance);
+
+
+    const largeMoveRate =
+        largeMoves / n;
+
+
+    /*
+        Normalize useful characteristics.
+
+        This is intentionally a suitability score,
+        not a prediction of future profit.
+    */
+
+    const wickScore =
+        Math.min(
+            100,
+            wickRatio * 180
+        );
+
+
+    const volatilityScore =
+        Math.min(
+            100,
+            volatility * 10000
+        );
+
+
+    const rangeScore =
+        Math.min(
+            100,
+            (
+                avgRange /
+                Math.max(last, 1e-12)
+            ) * 10000
+        );
+
+
+    const reversalScore =
+        Math.min(
+            100,
+            reversalRate * 250
+        );
+
+
+    const balanceScore =
+        balance * 100;
+
+
+    const largeMoveScore =
+        Math.min(
+            100,
+            largeMoveRate * 1000
+        );
+
+
+    const trendPenalty =
+        Math.min(
+            100,
+            efficiency * 180
+        );
+
+
+    let score =
+        volatilityScore * 0.20 +
+        rangeScore * 0.15 +
+        wickScore * 0.20 +
+        balanceScore * 0.15 +
+        reversalScore * 0.15 +
+        largeMoveScore * 0.10 +
+        (100 - trendPenalty) * 0.05;
+
+
+    /*
+        Strong directional movement is undesirable
+        for a neutral grid.
+    */
+
+    if (balance < 0.70) {
+        score -= 10;
+    }
+
+    if (efficiency > 0.40) {
+        score -= 10;
+    }
+
+    if (wickRatio < 0.20) {
+        score -= 5;
+    }
+
+
+    score =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                score
+            )
+        );
+
+
+    return {
+
+        avgRange,
+
+        avgBody,
+
+        avgUpper,
+
+        avgLower,
+
+        wickRatio,
+
+        up,
+
+        down,
+
+        balance,
+
+        netMove,
+
+        efficiency,
+
+        reversalRate,
+
+        volatility,
+
+        largeMoveRate,
+
+        score
+    };
+
+}
+
+
+/* =========================================================
+   GRID SIMULATION
+========================================================= */
+
+function simulateGrid(
+    candles,
+    spacing
+) {
+
+    if (!candles ||
+        candles.length < 50) {
+
+        return null;
+    }
+
+
+    const center =
+        candles[0].close;
+
+
+    const levels = [];
+
+
+    /*
+        Create levels around starting price.
+    */
+
+    for (let i = -100; i <= 100; i++) {
+
+        levels.push(
+            center *
+            Math.pow(
+                1 + spacing,
+                i
+            )
+        );
+    }
+
+
+    let cash =
+        SIM_CAPITAL;
+
+
+    let inventory = 0;
+
+    let realized = 0;
+
+    let trades = 0;
+
+    let wins = 0;
+
+    let maxInventory = 0;
+
+    let peakEquity =
+        SIM_CAPITAL;
+
+    let maxDrawdown = 0;
+
+
+    const unitCapital =
+        100;
+
+
+    let previous =
+        candles[0].close;
+
+
+    for (let i = 1;
+         i < candles.length;
+         i++) {
+
+        const c =
+            candles[i];
+
+
+        const high =
+            c.high;
+
+
+        const low =
+            c.low;
+
+
+        /*
+            Approximate intrabar movement by testing
+            both directions from previous close.
+        */
+
+        const moveUp =
+            high / previous - 1;
+
+
+        const moveDown =
+            1 - low / previous;
+
+
+        /*
+            Downward movement:
+            buy grid levels.
+        */
+
+        if (moveDown > spacing) {
+
+            const steps =
+                Math.min(
+                    10,
+                    Math.floor(
+                        moveDown /
+                        spacing
+                    )
+                );
+
+
+            for (
+                let s = 0;
+                s < steps;
+                s++
+            ) {
+
+                const buyPrice =
+                    previous *
+                    (1 -
+                    spacing *
+                    (s + 1));
+
+
+                if (cash >= unitCapital) {
+
+                    const quantity =
+                        unitCapital /
+                        buyPrice;
+
+
+                    const fee =
+                        unitCapital *
+                        FEE_RATE;
+
+
+                    cash -=
+                        unitCapital +
+                        fee;
+
+
+                    inventory +=
+                        quantity;
+
+
+                    trades++;
+
+                    maxInventory =
+                        Math.max(
+                            maxInventory,
+                            inventory
+                        );
+                }
+            }
+        }
+
+
+        /*
+            Upward movement:
+            sell inventory.
+        */
+
+        if (
+            moveUp > spacing &&
+            inventory > 0
+        ) {
+
+            const steps =
+                Math.min(
+                    10,
+                    Math.floor(
+                        moveUp /
+                        spacing
+                    )
+                );
+
+
+            for (
+                let s = 0;
+                s < steps;
+                s++
+            ) {
+
+                if (inventory <= 0) {
+                    break;
+                }
+
+
+                const sellPrice =
+                    previous *
+                    (1 +
+                    spacing *
+                    (s + 1));
+
+
+                const qty =
+                    Math.min(
+                        inventory,
+                        unitCapital /
+                        sellPrice
+                    );
+
+
+                if (qty <= 0) {
+                    continue;
+                }
+
+
+                const value =
+                    qty *
+                    sellPrice;
+
+
+                const cost =
+                    qty *
+                    previous *
+                    (1 + spacing);
+
+
+                const fee =
+                    value *
+                    FEE_RATE;
+
+
+                const tradePnl =
+                    value -
+                    cost -
+                    fee;
+
+
+                realized +=
+                    tradePnl;
+
+
+                cash +=
+                    value -
+                    fee;
+
+
+                inventory -=
+                    qty;
+
+
+                trades++;
+
+
+                if (tradePnl > 0) {
+                    wins++;
+                }
+            }
+        }
+
+
+        const equity =
+            cash +
+            inventory *
+            c.close +
+            realized;
+
+
+        peakEquity =
+            Math.max(
+                peakEquity,
+                equity
+            );
+
+
+        const drawdown =
+            peakEquity > 0
+                ? (
+                    peakEquity -
+                    equity
+                  ) /
+                  peakEquity
+                : 0;
+
+
+        maxDrawdown =
+            Math.max(
+                maxDrawdown,
+                drawdown
+            );
+
+
+        previous =
+            c.close;
+    }
+
+
+    /*
+        Mark remaining inventory to market.
+    */
+
+    const finalPrice =
+        candles[candles.length - 1].close;
+
+
+    const finalEquity =
+        cash +
+        inventory *
+        finalPrice +
+        realized;
+
+
+    const pnl =
+        finalEquity -
+        SIM_CAPITAL;
+
+
+    const winRate =
+        trades > 0
+            ? wins / trades
+            : 0;
+
+
+    /*
+        Penalize excessive inventory.
+    */
+
+    const inventoryPenalty =
+        Math.min(
+            50,
+            maxInventory * 0.5
+        );
+
+
+    /*
+        Score.
+
+        We prefer:
+        - positive simulated PnL
+        - many completed trades
+        - high win rate
+        - low drawdown
+        - low inventory
+    */
+
+    const pnlScore =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                50 +
+                pnl
+            )
+        );
+
+
+    const tradeScore =
+        Math.min(
+            100,
+            trades / 2
+        );
+
+
+    const winScore =
+        winRate * 100;
+
+
+    const drawdownScore =
+        Math.max(
+            0,
+            100 -
+            maxDrawdown * 200
+        );
+
+
+    let gridScore =
+        pnlScore * 0.40 +
+        tradeScore * 0.20 +
+        winScore * 0.15 +
+        drawdownScore * 0.25;
+
+
+    gridScore -=
+        inventoryPenalty;
+
+
+    gridScore =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                gridScore
+            )
+        );
+
+
+    return {
+
+        pnl,
+
+        trades,
+
+        winRate,
+
+        maxDrawdown,
+
+        maxInventory,
+
+        gridScore,
+
+        spacing
+
+    };
+
+}
+
+
+/* =========================================================
+   FIND BEST GRID
+========================================================= */
+
+function findBestGrid(
+    candles,
+    analysis
+) {
+
+    const tests = [];
+
+
+    for (const spacing of GRID_SPACINGS) {
+
+        const result =
+            simulateGrid(
+                candles,
+                spacing
+            );
+
+
+        if (result) {
+
+            tests.push(result);
+        }
+    }
+
+
+    if (!tests.length) {
+        return null;
+    }
+
+
+    /*
+        Add market score to grid score.
+
+        Neutral grid suitability is weighted 40% market
+        behavior and 60% simulated grid behavior.
+    */
+
+    for (const test of tests) {
+
+        test.totalScore =
+            analysis.score * 0.40 +
+            test.gridScore * 0.60;
+    }
+
+
+    tests.sort(
+        (a, b) =>
+            b.totalScore -
+            a.totalScore
+    );
+
+
+    return tests[0];
+}
+
+
+/* =========================================================
+   GRID PRICE RECOMMENDATION
+========================================================= */
+
+function makeRecommendation(
+    symbol,
+    ticker,
+    instrument,
+    analysis,
+    grid
+) {
+
+    const currentPrice =
+        Number(ticker.lastPrice);
+
+
+    if (!Number.isFinite(currentPrice) ||
+        currentPrice <= 0) {
+
+        return null;
+    }
+
+
+    const tickSize =
+        instrument &&
+        instrument.priceFilter
+            ? Number(
+                instrument.priceFilter.tickSize
+            )
+            : 0.00000001;
+
+
+    /*
+        Determine how much range is appropriate.
+
+        We use the recent movement characteristics
+        rather than simply making an arbitrary 2x range.
+
+        Minimum range:
+            about 12 grid spacings on each side.
+
+        Normal range:
+            based on recent volatility.
+
+        Maximum:
+            45% below / 45% above current price.
+    */
+
+    const spacing =
+        grid.spacing;
+
+
+    const volatility =
+        analysis.volatility;
+
+
+    const candleRangePercent =
+        analysis.avgRange /
+        currentPrice;
+
+
+    let halfRange =
+        Math.max(
+            spacing * 12,
+            candleRangePercent * 12,
+            volatility * 30
+        );
+
+
+    /*
+        Keep the recommended range reasonable.
+    */
+
+    halfRange =
+        Math.max(
+            0.05,
+            Math.min(
+                0.45,
+                halfRange
+            )
+        );
+
+
+    /*
+        Symmetric percentage range.
+
+        Lower and upper are then snapped to Bybit tick size.
+    */
+
+    let lower =
+        currentPrice *
+        (1 - halfRange);
+
+
+    let upper =
+        currentPrice *
+        (1 + halfRange);
+
+
+    lower =
+        snapToTick(
+            lower,
+            tickSize
+        );
+
+
+    upper =
+        snapToTick(
+            upper,
+            tickSize
+        );
+
+
+    /*
+        Number of grids based on the actual snapped prices.
+    */
+
+    const gridDistance =
+        upper - lower;
+
+
+    let gridCount =
+        Math.round(
+            gridDistance /
+            (
+                currentPrice *
+                spacing
+            )
+        );
+
+
+    gridCount =
+        Math.max(
+            2,
+            Math.min(
+                500,
+                gridCount
+            )
+        );
+
+
+    /*
+        Calculate actual percentage profit/grid
+        from the final snapped range.
+    */
+
+    const profitPerGrid =
+        gridCount > 0
+            ? (
+                (
+                    Math.pow(
+                        upper / lower,
+                        1 / gridCount
+                    ) - 1
+                ) * 100
+              )
+            : 0;
+
+
+    /*
+        Bybit arithmetic grid uses approximately:
+
+            (upper - lower) / grids
+
+        Price distance.
+    */
+
+    const arithmeticStep =
+        gridCount > 0
+            ? (
+                upper -
+                lower
+              ) /
+              gridCount
+            : 0;
+
+
+    /*
+        Approximate minimum investment.
+
+        The exact amount required by Bybit can vary according
+        to contract rules and order sizing, so this is a
+        scanner estimate.
+    */
+
+    const minInvestment =
+        Math.max(
+            1,
+            (
+                currentPrice *
+                arithmeticStep
+            ) *
+            gridCount *
+            0.02
+        );
+
+
+    return {
+
+        symbol,
+
+        currentPrice,
+
+        tickSize,
+
+        lower,
+
+        upper,
+
+        lowerFormatted:
+            formatBybitPrice(
+                lower,
+                tickSize
+            ),
+
+        upperFormatted:
+            formatBybitPrice(
+                upper,
+                tickSize
+            ),
+
+        currentFormatted:
+            formatBybitPrice(
+                currentPrice,
+                tickSize
+            ),
+
+        gridCount,
+
+        profitPerGrid,
+
+        arithmeticStep,
+
+        minInvestment,
+
+        leverage:
+            LEVERAGE,
+
+        spacing,
+
+        halfRange
+
+    };
+}
+
+
+/* =========================================================
+   ANALYZE ONE SYMBOL
+========================================================= */
+
+async function analyzeSymbol(
+    symbol,
+    myScanId
+) {
+
+    if (
+        stopRequested ||
+        myScanId !== scanId
+    ) {
+
+        return null;
+    }
+
+
+    const ticker =
+        tickerMap[symbol];
+
+
+    const instrument =
+        instrumentMap[symbol];
+
+
+    if (!ticker || !instrument) {
+
+        return null;
+    }
+
+
+    const volume =
+        Number(
+            ticker.turnover24h
+        );
+
+
+    if (
+        !Number.isFinite(volume) ||
+        volume < MIN_VOLUME
+    ) {
+
+        return null;
+    }
+
+
+    const candles =
+        await getCandles(symbol);
+
+
+    if (
+        stopRequested ||
+        myScanId !== scanId
+    ) {
+
+        return null;
+    }
+
+
+    const analysis =
+        analyzeCandles(candles);
+
+
+    if (!analysis) {
+
+        return null;
+    }
+
+
+    const grid =
+        findBestGrid(
+            candles,
+            analysis
+        );
+
+
+    if (!grid) {
+
+        return null;
+    }
+
+
+    const recommendation =
+        makeRecommendation(
+            symbol,
+            ticker,
+            instrument,
+            analysis,
+            grid
+        );
+
+
+    if (!recommendation) {
+
+        return null;
+    }
+
+
+    return {
+
+        symbol,
+
+        volume,
+
+        price:
+            Number(
+                ticker.lastPrice
+            ),
+
+        analysis,
+
+        grid,
+
+        recommendation,
+
+        totalScore:
+            grid.totalScore
+
+    };
+}
+
+
+/* =========================================================
+   RENDER SELECTED RECOMMENDATION
+========================================================= */
+
+function selectResult(result) {
+
+    if (!result) {
+        return;
+    }
+
+
+    selectedResult =
+        result;
+
+
+    const r =
+        result.recommendation;
+
+
+    document.getElementById(
+        "selectedSymbol"
+    ).textContent =
+        result.symbol;
+
+
+    document.getElementById(
+        "selectedSubtitle"
+    ).textContent =
+        "Score " +
+        result.totalScore.toFixed(1) +
+        " • Click prices to copy";
+
+
+    document.getElementById(
+        "lowerPrice"
+    ).textContent =
+        r.lowerFormatted;
+
+
+    document.getElementById(
+        "upperPrice"
+    ).textContent =
+        r.upperFormatted;
+
+
+    document.getElementById(
+        "gridCount"
+    ).textContent =
+        r.gridCount;
+
+
+    document.getElementById(
+        "profitGrid"
+    ).textContent =
+        r.profitPerGrid.toFixed(4) +
+        "%";
+
+
+    document.getElementById(
+        "leverage"
+    ).textContent =
+        r.leverage + "x";
+
+
+    document.getElementById(
+        "minInvestment"
+    ).textContent =
+        formatMoney(
+            r.minInvestment
+        ) +
+        " USDT";
+
+
+    document.getElementById(
+        "currentPrice"
+    ).textContent =
+        r.currentFormatted;
+
+
+    /*
+        Update Bybit Terminal link for this pair
+    */
+    const bybitLink = document.getElementById("btnBybitWeb");
+    if (bybitLink) {
+        bybitLink.href = "https://www.bybit.com/trade/usdt/" + result.symbol;
+        bybitLink.title = "Open " + result.symbol + " on Bybit";
+    }
+
+    /*
+        Highlight selected row.
+    */
+    document.querySelectorAll(
+        "#resultsBody tr[data-symbol]"
+    ).forEach(row => {
+
+        row.classList.toggle(
+            "selected",
+            row.dataset.symbol ===
+            result.symbol
+        );
+
+    });
+
+
+    addLog(
+        "Selected " +
+        result.symbol +
+        " recommendation.",
+        "ok"
+    );
+}
+
+
+/* =========================================================
+   RENDER TABLE
+========================================================= */
+
+function renderResults() {
+
+    const body =
+        document.getElementById(
+            "resultsBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if (!results.length) {
+
+        body.innerHTML =
+            `<tr>
+                <td colspan="13"
+                    class="no-results">
+                    No suitable pairs found yet.
+                </td>
+            </tr>`;
+
+        return;
+    }
+
+
+    results.sort(
+        (a, b) =>
+            b.totalScore -
+            a.totalScore
+    );
+
+
+    results.forEach(
+        (result, index) => {
+
+            const tr =
+                document.createElement("tr");
+
+
+            tr.dataset.symbol =
+                result.symbol;
+
+
+            tr.onclick =
+                () => selectResult(result);
+
+
+            const scoreClass =
+                result.totalScore >= 70
+                    ? "good"
+                    : result.totalScore >= 50
+                        ? "medium"
+                        : "bad";
+
+
+            const r =
+                result.recommendation;
+
+
+            tr.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td class="symbol">
+                    ${result.symbol}
+
+                    ${
+                        index === 0
+                        ? '<span class="rec-badge">BEST</span>'
+                        : ''
+                    }
+                </td>
+
+                <td class="score ${scoreClass}">
+                    ${result.totalScore.toFixed(1)}
+                </td>
+
+                <td>
+                    ${formatMoney(result.volume)}
+                </td>
+
+                <td>
+                    ${r.currentFormatted}
+                </td>
+
+                <td>
+                    ${r.lowerFormatted}
+                </td>
+
+                <td>
+                    ${r.upperFormatted}
+                </td>
+
+                <td>
+                    ${r.gridCount}
+                </td>
+
+                <td>
+                    ${r.profitPerGrid.toFixed(4)}%
+                </td>
+
+                <td>
+                    ${result.grid.trades}
+                </td>
+
+                <td>
+                    ${(result.grid.winRate * 100).toFixed(1)}%
+                </td>
+
+                <td>
+                    ${(result.grid.maxDrawdown * 100).toFixed(2)}%
+                </td>
+
+                <td>
+                    ${(r.spacing * 100).toFixed(2)}%
+                </td>
+            `;
+
+
+            body.appendChild(tr);
+
+        }
+    );
+
+
+    /*
+        Keep the first/best selected if nothing
+        has been selected yet.
+    */
+
+    if (!selectedResult) {
+
+        selectResult(
+            results[0]
+        );
+
+    } else {
+
+        const stillExists =
+            results.find(
+                x =>
+                    x.symbol ===
+                    selectedResult.symbol
+            );
+
+
+        if (stillExists) {
+
+            selectResult(
+                stillExists
+            );
+
+        } else {
+
+            selectResult(
+                results[0]
+            );
+        }
+    }
+
+}
+
+
+/* =========================================================
+   SCAN
+========================================================= */
+
+async function startScan() {
+
+    const myScanId =
+        ++scanId;
+
+
+    stopRequested = false;
+
+    // Free memory from previous scan
+    results = [];
+    symbols = [];
+    tickerMap = {};
+    instrumentMap = {};
+    selectedResult = null;
+
+    requestCount = 0;
+    successCount = 0;
+    errorCount = 0;
+
+    startTime =
+        Date.now();
+
+
+    document.getElementById(
+        "resultsBody"
+    ).innerHTML =
+        `<tr>
+            <td colspan="13"
+                class="no-results">
+                Starting scan...
+            </td>
+        </tr>`;
+
+
+    document.getElementById(
+        "selectedSymbol"
+    ).textContent =
+        "—";
+
+
+    document.getElementById(
+        "selectedSubtitle"
+    ).textContent =
+        "Waiting for scan...";
+
+
+    addLog(
+        "==============================",
+        "info"
+    );
+
+    addLog(
+        "Starting new scan.",
+        "info"
+    );
+
+
+    try {
+
+        await testAPI();
+
+
+        if (
+            stopRequested ||
+            myScanId !== scanId
+        ) {
+            return;
+        }
+
+
+        symbols =
+            await getSymbols();
+
+
+        await getTickers();
+
+
+        /*
+            Only symbols with enough volume are scanned.
+        */
+
+        const volumeSymbols =
+            symbols.filter(symbol => {
+
+                const ticker =
+                    tickerMap[symbol];
+
+                if (!ticker) {
+                    return false;
+                }
+
+                return Number(
+                    ticker.turnover24h
+                ) >= MIN_VOLUME;
+
+            });
+
+
+        addLog(
+            volumeSymbols.length +
+            " symbols have 24h volume >= $" +
+            MIN_VOLUME.toLocaleString() +
+            ".",
+            "ok"
+        );
+
+
+        const batchSize =
+            getBatchSize();
+
+
+        const batchPause =
+            getBatchPause();
+
+
+        addLog(
+            "Batch mode: " +
+            batchSize +
+            " requests, then " +
+            batchPause +
+            " ms pause.",
+            "info"
+        );
+
+
+        const total =
+            volumeSymbols.length;
+
+
+        let completed = 0;
+
+
+        /*
+            =================================================
+            BATCH PROCESSING
+
+            Example with defaults:
+
+                120 requests
+                wait 1000 ms
+                120 requests
+                wait 1000 ms
+                ...
+
+            This avoids sending a continuous stream of
+            individual requests.
+            =================================================
+        */
+
+        for (
+            let start = 0;
+            start < total;
+            start += batchSize
+        ) {
+
+            if (
+                stopRequested ||
+                myScanId !== scanId
+            ) {
+                break;
+            }
+
+
+            const batch =
+                volumeSymbols.slice(
+                    start,
+                    start + batchSize
+                );
+
+
+            addLog(
+                "Requesting batch " +
+                (
+                    Math.floor(
+                        start / batchSize
+                    ) + 1
+                ) +
+                " (" +
+                batch.length +
+                " symbols)...",
+                "info"
+            );
+
+
+            /*
+                Send the entire batch concurrently.
+            */
+
+            const batchResults =
+                await Promise.all(
+                    batch.map(
+                        symbol =>
+                            analyzeSymbol(
+                                symbol,
+                                myScanId
+                            ).catch(error => {
+
+                                addLog(
+                                    symbol +
+                                    ": " +
+                                    error.message,
+                                    "warning"
+                                );
+
+                                return null;
+
+                            })
+                    )
+                );
+
+
+            for (
+                const result
+                of batchResults
+            ) {
+
+                completed++;
+
+
+                if (result) {
+
+                    results.push(
+                        result
+                    );
+                }
+            }
+
+
+            renderResults();
+
+
+            const elapsed =
+                (
+                    Date.now() -
+                    startTime
+                ) / 1000;
+
+
+            const speed =
+                elapsed > 0
+                    ? completed / elapsed
+                    : 0;
+
+
+            const remaining =
+                Math.max(
+                    0,
+                    total - completed
+                );
+
+
+            const eta =
+                speed > 0
+                    ? remaining / speed
+                    : 0;
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+
+                "Progress: " +
+                completed +
+                "/" +
+                total +
+                " • " +
+                "Results: " +
+                results.length +
+                " • " +
+                speed.toFixed(1) +
+                " symbols/s" +
+                " • ETA " +
+                formatSeconds(eta) +
+                " • Requests " +
+                requestCount +
+                " • Errors " +
+                errorCount;
+
+
+            addLog(
+                "Batch finished. " +
+                completed +
+                "/" +
+                total +
+                " processed. " +
+                results.length +
+                " candidates found.",
+                "ok"
+            );
+
+
+            /*
+                Wait between batches.
+
+                Don't wait after the final batch.
+            */
+
+            if (
+                start + batchSize < total &&
+                !stopRequested &&
+                myScanId === scanId
+            ) {
+
+                await sleep(
+                    batchPause
+                );
+            }
+        }
+
+
+        if (
+            stopRequested ||
+            myScanId !== scanId
+        ) {
+
+            addLog(
+                "Scan stopped.",
+                "warning"
+            );
+
+            return;
+        }
+
+
+        /*
+            Final ranking.
+        */
+
+        results.sort(
+            (a, b) =>
+                b.totalScore -
+                a.totalScore
+        );
+
+
+        renderResults();
+
+
+        if (results.length) {
+
+            selectResult(
+                results[0]
+            );
+
+
+            addLog(
+                "SCAN COMPLETE.",
+                "ok"
+            );
+
+
+            addLog(
+                "Best candidate: " +
+                results[0].symbol +
+                " | score " +
+                results[0].totalScore.toFixed(1),
+                "ok"
+            );
+
+
+            addLog(
+                "Lower: " +
+                results[0].recommendation.lowerFormatted +
+                " | Upper: " +
+                results[0].recommendation.upperFormatted +
+                " | Grids: " +
+                results[0].recommendation.gridCount,
+                "ok"
+            );
+
+        } else {
+
+            addLog(
+                "Scan completed with no candidates.",
+                "warning"
+            );
+        }
+
+
+        const elapsed =
+            (
+                Date.now() -
+                startTime
+            ) / 1000;
+
+
+        document.getElementById(
+            "status"
+        ).textContent =
+
+            "Complete • " +
+            results.length +
+            " candidates • " +
+            elapsed.toFixed(1) +
+            " sec • " +
+            requestCount +
+            " API requests";
+
+
+    } catch (error) {
+
+        addLog(
+            "SCAN ERROR: " +
+            error.message,
+            "error"
+        );
+
+
+        document.getElementById(
+            "status"
+        ).textContent =
+            "Error: " +
+            error.message;
+
+    }
+
+}
+
+
+/* =========================================================
+   TIME FORMAT
+========================================================= */
+
+function formatSeconds(seconds) {
+
+    if (!Number.isFinite(seconds)) {
+        return "—";
+    }
+
+    seconds =
+        Math.max(
+            0,
+            Math.round(seconds)
+        );
+
+
+    if (seconds < 60) {
+
+        return seconds + "s";
+    }
+
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+
+    const secs =
+        seconds % 60;
+
+
+    if (minutes < 60) {
+
+        return (
+            minutes +
+            "m " +
+            secs +
+            "s"
+        );
+    }
+
+
+    const hours =
+        Math.floor(
+            minutes / 60
+        );
+
+
+    const mins =
+        minutes % 60;
+
+
+    return (
+        hours +
+        "h " +
+        mins +
+        "m"
+    );
+
+}
+
+
+/* =========================================================
+   CONTROLS
+========================================================= */
+
+function stopScan() {
+
+    stopRequested =
+        true;
+
+    scanId++;
+
+
+    addLog(
+        "Stop requested.",
+        "warning"
+    );
+
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        "Stopping...";
+}
+
+
+function restartScan() {
+
+    stopRequested =
+        true;
+
+    scanId++;
+
+
+    /*
+        Small delay prevents an old scan from continuing
+        into the new one.
+    */
+
+    setTimeout(
+        () => startScan(),
+        100
+    );
+
+}
+
+
+/* =========================================================
+   BOOT
+========================================================= */
+
+addLog(
+    "HTML / JAVASCRIPT LOADED SUCCESSFULLY.",
+    "ok"
+);
+
+
+addLog(
+    "Batch scanner configured for up to 120 requests per batch.",
+    "info"
+);
+
+
+addLog(
+    "Price recommendations use Bybit instrument tick sizes.",
+    "info"
+);
+
+
+addLog(
+    "Tap a recommended pair to load its parameters.",
+    "info"
+);
+
+
+addLog(
+    "Tap Lower/Upper price to copy it.",
+    "info"
+);
+
+setTimeout(
+    () => startScan(),
+    200
+);
+
+/* =========================================================
+   GRID BOT & PNL MANAGEMENT
+========================================================= */
+
+let pnlPollInterval = null;
+
+function promptCreateGridBot() {
+    if (!selectedResult) {
+        alert("Please select a recommended coin from the list first.");
+        return;
+    }
+
+    const r = selectedResult.recommendation;
+    const invInput = document.getElementById("botInvestmentInput");
+    const investmentVal = invInput ? (parseFloat(invInput.value) || 50) : 50;
+
+    document.getElementById("modalBotSymbol").textContent = selectedResult.symbol;
+    document.getElementById("modalBotLower").textContent = r.lowerFormatted;
+    document.getElementById("modalBotUpper").textContent = r.upperFormatted;
+    document.getElementById("modalBotGrids").textContent = r.gridCount;
+    document.getElementById("modalBotProfitGrid").textContent = r.profitPerGrid.toFixed(4) + "%";
+    document.getElementById("modalBotInvestment").textContent = investmentVal.toFixed(2) + " USDT";
+
+    document.getElementById("createBotModal").style.display = "flex";
+}
+
+function closeCreateBotModal() {
+    document.getElementById("createBotModal").style.display = "none";
+}
+
+async function confirmCreateGridBot() {
+    if (!selectedResult) return;
+
+    const r = selectedResult.recommendation;
+    const invInput = document.getElementById("botInvestmentInput");
+    const investment = invInput ? (parseFloat(invInput.value) || 50) : 50;
+
+    const btnConfirm = document.getElementById("btnConfirmCreateBot");
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = "Starting...";
+
+    addLog(`Creating Neutral Grid Bot for ${selectedResult.symbol} ($${investment} @ 10x)...`, "info");
+
+    try {
+        const response = await fetch("/api/bot/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                symbol: selectedResult.symbol,
+                lowerPrice: r.lowerFormatted,
+                upperPrice: r.upperFormatted,
+                gridCount: r.gridCount,
+                leverage: 10,
+                investment: investment,
+                currentPrice: selectedResult.price
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            addLog(`✅ SUCCESS: ${data.message}`, "ok");
+            closeCreateBotModal();
+            fetchActiveBots();
+        } else {
+            addLog(`❌ Failed to start bot: ${data.message}`, "error");
+            alert(`Could not start bot: ${data.message}`);
+        }
+    } catch (e) {
+        addLog(`❌ Network error while creating bot: ${e.message}`, "error");
+        alert("Failed to communicate with backend server: " + e.message);
+    } finally {
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = "Confirm & Start";
+    }
+}
+
+function promptStopAllBots() {
+    document.getElementById("stopAllModal").style.display = "flex";
+}
+
+function closeStopAllModal() {
+    document.getElementById("stopAllModal").style.display = "none";
+}
+
+async function confirmStopAllBots() {
+    const btn = document.getElementById("btnConfirmStopAll");
+    btn.disabled = true;
+    btn.textContent = "Stopping...";
+
+    addLog("Stopping all active grid bots...", "warning");
+
+    try {
+        const res = await fetch("/api/bot/stop-all", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            addLog(`🛑 ${data.message}`, "ok");
+            closeStopAllModal();
+            fetchActiveBots();
+        } else {
+            addLog(`Failed to stop bots: ${data.message}`, "error");
+            alert(data.message);
+        }
+    } catch (e) {
+        addLog(`Network error stopping bots: ${e.message}`, "error");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Yes, Stop All";
+    }
+}
+
+async function stopSingleBot(botId, symbol) {
+    if (!confirm(`Are you sure you want to stop the Grid Bot for ${symbol}?`)) {
+        return;
+    }
+
+    addLog(`Stopping Grid Bot for ${symbol}...`, "warning");
+
+    try {
+        const res = await fetch("/api/bot/stop", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ botId, symbol })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            addLog(`🛑 Grid Bot for ${symbol} stopped.`, "ok");
+            fetchActiveBots();
+        } else {
+            addLog(`Failed to stop bot: ${data.message}`, "error");
+            alert(data.message);
+        }
+    } catch (e) {
+        addLog(`Network error: ${e.message}`, "error");
+    }
+}
+
+async function fetchActiveBots() {
+    try {
+        // Read any known bot IDs from browser storage (in case server rebooted on ephemeral Northflank container)
+        let storedIds = [];
+        try {
+            const raw = localStorage.getItem("bybit_active_bot_ids");
+            if (raw) storedIds = JSON.parse(raw);
+        } catch (e) {}
+
+        const queryUrl = storedIds.length > 0 ? `/api/bot/list?knownIds=${encodeURIComponent(storedIds.join(","))}` : `/api/bot/list`;
+
+        const res = await fetch(queryUrl);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (!data.success) return;
+
+        const summary = data.summary;
+        const bots = data.bots || [];
+
+        // Save active bot IDs back to browser localStorage
+        try {
+            const activeIds = bots.map(b => b.id);
+            localStorage.setItem("bybit_active_bot_ids", JSON.stringify(activeIds));
+        } catch (e) {}
+
+        // Update Stats Banner
+        const pnlValElem = document.getElementById("totalPnlValue");
+        const pnlPctElem = document.getElementById("totalPnlPercent");
+        const countElem = document.getElementById("activeBotsCount");
+        const capElem = document.getElementById("totalAllocatedCapital");
+
+        if (pnlValElem) {
+            pnlValElem.textContent = (summary.totalPnl >= 0 ? "+$" : "-$") + Math.abs(summary.totalPnl).toFixed(2);
+            pnlValElem.style.color = summary.totalPnl >= 0 ? "#73dc73" : "#ff6c6c";
+        }
+
+        if (pnlPctElem) {
+            pnlPctElem.textContent = (summary.totalPnlPercent >= 0 ? "+" : "") + summary.totalPnlPercent.toFixed(2) + "%";
+            pnlPctElem.style.color = summary.totalPnlPercent >= 0 ? "#73dc73" : "#ff6c6c";
+        }
+
+        if (countElem) countElem.textContent = summary.totalActiveBots;
+        if (capElem) capElem.textContent = "$" + summary.totalInvestment.toFixed(2);
+
+        // Update Table
+        const tbody = document.getElementById("activeBotsBody");
+        if (!tbody) return;
+
+        if (bots.length === 0) {
+            tbody.innerHTML = `<tr>
+                <td colspan="11" class="no-results">
+                    No active grid bots running yet. Click "Create Neutral Grid Bot" above to start one.
+                </td>
+            </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = "";
+
+        bots.forEach(bot => {
+            const tr = document.createElement("tr");
+
+            const pnlClass = bot.pnl >= 0 ? "good" : "bad";
+            const pnlPrefix = bot.pnl >= 0 ? "+$" : "-$";
+            const pnlPctPrefix = bot.pnlPercent >= 0 ? "+" : "";
+
+            const runtimeMins = Math.floor((Date.now() - bot.startTime) / 60000);
+            const runtimeStr = runtimeMins < 60
+                ? `${runtimeMins}m`
+                : `${Math.floor(runtimeMins / 60)}h ${runtimeMins % 60}m`;
+
+            tr.innerHTML = `
+                <td class="symbol">${bot.symbol}</td>
+                <td><span class="rec-badge" style="background:#223326; color:#8ee88e;">Neutral</span> ${bot.leverage}x</td>
+                <td>${bot.lowerPrice}</td>
+                <td>${bot.upperPrice}</td>
+                <td>${bot.gridCount}</td>
+                <td>$${bot.investment.toFixed(2)}</td>
+                <td>${bot.currentPrice ? bot.currentPrice.toFixed(4) : "—"}</td>
+                <td class="score ${pnlClass}">${pnlPrefix}${Math.abs(bot.pnl).toFixed(2)}</td>
+                <td class="score ${pnlClass}">${pnlPctPrefix}${bot.pnlPercent.toFixed(2)}%</td>
+                <td style="color: #aaa;">${runtimeStr}</td>
+                <td>
+                    <button class="btn-stop-bot" onclick="stopSingleBot('${bot.id}', '${bot.symbol}')">Stop</button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+    } catch (e) {
+        // Backend might be offline or in static viewing mode
+    }
+}
+
+// Start polling for active bots every 5 seconds
+pnlPollInterval = setInterval(fetchActiveBots, 5000);
+fetchActiveBots();
+
+</script>
+
+</body>
+</html>

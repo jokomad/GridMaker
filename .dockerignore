@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+.env
+active_bots.json
+.git
+.agents
+.gemini
+
