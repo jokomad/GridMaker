@@ -471,8 +471,8 @@
             background: #18181c;
             border: 1px solid #444;
             border-radius: 12px;
-            max-width: 560px;
-            width: 92%;
+            max-width: 620px;
+            width: 94%;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
@@ -1028,7 +1028,7 @@
                         <span id="modalChartSymbolTitle" style="font-weight: bold; color: #fff; font-size: 12px;">—</span>
                         <span style="color: #888;">• 100 Candles (1m)</span>
                     </div>
-                    <div style="display: flex; gap: 10px; align-items: center; font-size: 10px;">
+                    <div style="display: flex; gap: 8px; align-items: center; font-size: 10px;">
                         <span style="display: flex; align-items: center; gap: 4px; color: #26a69a;">
                             <span style="display: inline-block; width: 10px; height: 2px; background: #26a69a;"></span> Upper BB
                         </span>
@@ -1038,11 +1038,25 @@
                         <span id="modalChartLiveBadge" style="background: #1e3a29; color: #73dc73; padding: 1px 6px; border-radius: 3px; font-weight: bold; font-size: 9px;">LIVE WS</span>
                     </div>
                 </div>
-                <div id="modalChartContainer" style="position: relative; width: 100%; height: 150px;">
-                    <canvas id="modalChartCanvas" style="width: 100%; height: 100%; display: block; border-radius: 4px;"></canvas>
+                <div id="modalChartContainer" style="position: relative; width: 100%; height: 175px; user-select: none;">
+                    <canvas id="modalChartCanvas" style="width: 100%; height: 100%; display: block; border-radius: 4px; cursor: grab;"></canvas>
                     <div id="modalChartLoading" style="position: absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(13,15,20,0.85); color:#888; font-size:12px; border-radius:4px;">
                         Loading 100 candles...
                     </div>
+                    <!-- Mini chart interactive tooltip -->
+                    <div id="modalChartTooltip" style="position: absolute; display: none; background: rgba(18, 20, 26, 0.95); border: 1px solid #444; border-radius: 4px; padding: 5px 8px; font-size: 10px; line-height: 1.4; color: #ccc; pointer-events: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.6); white-space: nowrap;"></div>
+                    <!-- Chart control buttons overlay -->
+                    <div style="position: absolute; bottom: 6px; left: 8px; display: flex; gap: 4px; z-index: 5;">
+                        <button type="button" onclick="modalChartZoom(1.25)" title="Zoom in (or use Mouse Wheel)" style="background: rgba(30, 32, 40, 0.85); color: #ccc; border: 1px solid #444; border-radius: 3px; font-size: 11px; padding: 2px 7px; cursor: pointer;">🔍+</button>
+                        <button type="button" onclick="modalChartZoom(0.8)" title="Zoom out (or use Mouse Wheel)" style="background: rgba(30, 32, 40, 0.85); color: #ccc; border: 1px solid #444; border-radius: 3px; font-size: 11px; padding: 2px 7px; cursor: pointer;">🔍−</button>
+                        <button type="button" onclick="modalChartStretch(1.2)" title="Stretch vertical price height" style="background: rgba(30, 32, 40, 0.85); color: #ccc; border: 1px solid #444; border-radius: 3px; font-size: 11px; padding: 2px 7px; cursor: pointer;">↕ Stretch</button>
+                        <button type="button" onclick="modalChartStretch(0.8)" title="Compress vertical price height" style="background: rgba(30, 32, 40, 0.85); color: #ccc; border: 1px solid #444; border-radius: 3px; font-size: 11px; padding: 2px 7px; cursor: pointer;">↕ Fit</button>
+                        <button type="button" onclick="resetModalChartTransform()" title="Reset zoom and pan" style="background: rgba(30, 32, 40, 0.85); color: #ffd166; border: 1px solid #555; border-radius: 3px; font-size: 10px; padding: 2px 7px; cursor: pointer;">↺ Reset</button>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 9px; color: #777;">
+                    <span>🖱 Drag to Pan • Wheel to Zoom • Drag price axis on right or click buttons to stretch</span>
+                    <span id="modalChartZoomLevel" style="color: #999;">Zoom: 1.0x</span>
                 </div>
             </div>
             <div class="modal-details">
@@ -4412,8 +4426,45 @@
             return { upper, lower };
         }
 
+        // Modal Mini-Chart Transform & Interactive State (Pan, Zoom, Stretch)
+        let modalChartZoomX = 1.0;
+        let modalChartPanX = 0;       // in candles
+        let modalChartStretchY = 1.0;  // vertical price scale multiplier
+        let modalChartPanY = 0;       // vertical price shift offset
+        let modalChartActiveData = null;
+
+        function resetModalChartTransform() {
+            modalChartZoomX = 1.0;
+            modalChartPanX = 0;
+            modalChartStretchY = 1.0;
+            modalChartPanY = 0;
+            updateModalChartZoomDisplay();
+            renderModalMiniChart();
+        }
+
+        function modalChartZoom(factor) {
+            const newZoom = Math.max(0.5, Math.min(8.0, modalChartZoomX * factor));
+            modalChartZoomX = newZoom;
+            updateModalChartZoomDisplay();
+            renderModalMiniChart();
+        }
+
+        function modalChartStretch(factor) {
+            modalChartStretchY = Math.max(0.3, Math.min(5.0, modalChartStretchY * factor));
+            renderModalMiniChart();
+        }
+
+        function updateModalChartZoomDisplay() {
+            const zoomBadge = document.getElementById("modalChartZoomLevel");
+            if (zoomBadge) {
+                zoomBadge.textContent = `Zoom: ${modalChartZoomX.toFixed(1)}x${modalChartStretchY !== 1.0 ? ` • ↕ ${modalChartStretchY.toFixed(1)}x` : ""}`;
+            }
+        }
+
         /**
          * Render 100 candles mini chart with Upper and Lower Bollinger Bands (no middle band)
+         * Supports dynamic horizontal Zoom (wheel/buttons), horizontal Pan (drag),
+         * vertical Stretch (drag price scale / buttons), and Hover inspection tooltip.
          */
         function renderModalMiniChart() {
             const canvas = document.getElementById("modalChartCanvas");
@@ -4421,7 +4472,7 @@
             if (!canvas || !container || modalCandles.length === 0) return;
 
             const width = container.clientWidth || 500;
-            const height = container.clientHeight || 150;
+            const height = container.clientHeight || 175;
 
             const dpr = window.devicePixelRatio || 1;
             canvas.width = width * dpr;
@@ -4436,14 +4487,24 @@
             ctx.fillStyle = "#0c0e12";
             ctx.fillRect(0, 0, width, height);
 
-            const candles = modalCandles;
-            const bb = calculateModalBollingerBands(candles, 20, 2);
+            const allCandles = modalCandles;
+            const totalCount = allCandles.length;
+            const bb = calculateModalBollingerBands(allCandles, 20, 2);
 
-            // Compute price range across candles and bands
+            // Calculate visible candle window based on Zoom and Pan
+            const visibleCount = Math.max(10, Math.min(totalCount, Math.round(totalCount / modalChartZoomX)));
+            const maxPan = totalCount - visibleCount;
+            modalChartPanX = Math.max(0, Math.min(maxPan, modalChartPanX));
+
+            // Default pan shows most recent candles
+            const startIdx = Math.max(0, Math.min(totalCount - visibleCount, totalCount - visibleCount - Math.round(modalChartPanX)));
+            const endIdx = Math.min(totalCount, startIdx + visibleCount);
+
+            // Compute auto-scaling price range for the visible window
             let minP = Infinity;
             let maxP = -Infinity;
-            for (let i = 0; i < candles.length; i++) {
-                const c = candles[i];
+            for (let i = startIdx; i < endIdx; i++) {
+                const c = allCandles[i];
                 if (c.low < minP) minP = c.low;
                 if (c.high > maxP) maxP = c.high;
                 if (bb.lower[i] !== null && bb.lower[i] < minP) minP = bb.lower[i];
@@ -4455,14 +4516,16 @@
                 maxP = (modalLatestPrice || 1) * 1.01;
             }
 
-            const pRange = maxP - minP;
-            const pPadding = pRange * 0.06;
-            const plotMin = minP - pPadding;
-            const plotMax = maxP + pPadding;
-            const plotRange = plotMax - plotMin;
+            // Apply vertical stretch & vertical pan offset
+            const midP = (minP + maxP) / 2;
+            const rawHalfRange = (maxP - minP) / 2;
+            const stretchedHalf = (rawHalfRange / modalChartStretchY);
+            const plotMin = (midP - stretchedHalf) + modalChartPanY;
+            const plotMax = (midP + stretchedHalf) + modalChartPanY;
+            const plotRange = Math.max(1e-12, plotMax - plotMin);
 
-            const leftMargin = 4;
-            const rightMargin = 60;
+            const leftMargin = 6;
+            const rightMargin = 65;
             const topMargin = 8;
             const bottomMargin = 16;
             const plotWidth = Math.max(10, width - leftMargin - rightMargin);
@@ -4472,16 +4535,20 @@
                 return topMargin + plotHeight * (1 - (price - plotMin) / plotRange);
             }
 
-            function indexToX(index) {
-                return leftMargin + (index / (candles.length - 1 || 1)) * plotWidth;
+            function yToPrice(y) {
+                return plotMin + (1 - (y - topMargin) / plotHeight) * plotRange;
+            }
+
+            function indexToX(i) {
+                return leftMargin + ((i - startIdx) / Math.max(1, visibleCount - 1)) * plotWidth;
             }
 
             // Draw horizontal subtle grid lines & price labels
             ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
             ctx.lineWidth = 1;
             const gridSteps = 3;
-            for (let i = 0; i <= gridSteps; i++) {
-                const p = plotMin + (plotRange * i) / gridSteps;
+            for (let s = 0; s <= gridSteps; s++) {
+                const p = plotMin + (plotRange * s) / gridSteps;
                 const y = priceToY(p);
                 ctx.beginPath();
                 ctx.moveTo(leftMargin, y);
@@ -4498,7 +4565,7 @@
             // Bollinger Bands Shaded Area between Upper and Lower Bands
             ctx.beginPath();
             let started = false;
-            for (let i = 0; i < candles.length; i++) {
+            for (let i = startIdx; i < endIdx; i++) {
                 if (bb.upper[i] !== null) {
                     const x = indexToX(i);
                     const y = priceToY(bb.upper[i]);
@@ -4510,7 +4577,7 @@
                     }
                 }
             }
-            for (let i = candles.length - 1; i >= 0; i--) {
+            for (let i = endIdx - 1; i >= startIdx; i--) {
                 if (bb.lower[i] !== null) {
                     const x = indexToX(i);
                     const y = priceToY(bb.lower[i]);
@@ -4526,7 +4593,7 @@
             ctx.strokeStyle = "rgba(38, 166, 154, 0.85)";
             ctx.beginPath();
             started = false;
-            for (let i = 0; i < candles.length; i++) {
+            for (let i = startIdx; i < endIdx; i++) {
                 if (bb.upper[i] !== null) {
                     const x = indexToX(i);
                     const y = priceToY(bb.upper[i]);
@@ -4539,7 +4606,7 @@
             ctx.strokeStyle = "rgba(239, 83, 80, 0.85)";
             ctx.beginPath();
             started = false;
-            for (let i = 0; i < candles.length; i++) {
+            for (let i = startIdx; i < endIdx; i++) {
                 if (bb.lower[i] !== null) {
                     const x = indexToX(i);
                     const y = priceToY(bb.lower[i]);
@@ -4548,12 +4615,12 @@
             }
             ctx.stroke();
 
-            // Draw 100 Candlesticks
-            const candleSpacing = plotWidth / candles.length;
-            const candleWidth = Math.max(1, candleSpacing * 0.7);
+            // Draw Candlesticks
+            const candleSpacing = plotWidth / visibleCount;
+            const candleWidth = Math.max(1, candleSpacing * 0.75);
 
-            for (let i = 0; i < candles.length; i++) {
-                const c = candles[i];
+            for (let i = startIdx; i < endIdx; i++) {
+                const c = allCandles[i];
                 const x = indexToX(i);
                 const yOpen = priceToY(c.open);
                 const yClose = priceToY(c.close);
@@ -4579,7 +4646,7 @@
             }
 
             // Current Price Dash Line & Badge
-            const lastCandle = candles[candles.length - 1];
+            const lastCandle = allCandles[allCandles.length - 1];
             const currentPrice = modalLatestPrice || (lastCandle ? lastCandle.close : 0);
             if (currentPrice > 0) {
                 const yCurrent = priceToY(currentPrice);
@@ -4601,7 +4668,174 @@
                 ctx.textBaseline = "middle";
                 ctx.fillText(formatBybitPrice(currentPrice, modalTickSize), leftMargin + plotWidth + 4, yCurrent);
             }
+
+            // Store active data for hover and pointer gestures
+            modalChartActiveData = {
+                allCandles,
+                bb,
+                startIdx,
+                endIdx,
+                visibleCount,
+                leftMargin,
+                rightMargin,
+                plotWidth,
+                plotHeight,
+                plotMin,
+                plotMax,
+                plotRange,
+                priceToY,
+                yToPrice,
+                indexToX
+            };
         }
+
+        /**
+         * Setup interactive drag to pan, mouse wheel zoom, vertical stretch, and hover tooltip on modal chart
+         */
+        (function setupModalChartGestures() {
+            const canvas = document.getElementById("modalChartCanvas");
+            const tooltip = document.getElementById("modalChartTooltip");
+            if (!canvas) return;
+
+            let isDragging = false;
+            let dragTarget = null; // "chart" | "yAxis"
+            let startX = 0;
+            let startY = 0;
+            let initialPanX = 0;
+            let initialPanY = 0;
+            let initialStretchY = 1.0;
+
+            canvas.addEventListener("wheel", (evt) => {
+                evt.preventDefault();
+                if (modalCandles.length === 0) return;
+
+                // Mouse wheel zoom centered on cursor
+                const zoomFactor = evt.deltaY < 0 ? 1.15 : 0.87;
+                modalChartZoom(zoomFactor);
+            }, { passive: false });
+
+            function onPointerDown(evt) {
+                if (!modalChartActiveData) return;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+                const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                initialPanX = modalChartPanX;
+                initialPanY = modalChartPanY;
+                initialStretchY = modalChartStretchY;
+                isDragging = true;
+
+                const localX = clientX - rect.left;
+                if (localX >= modalChartActiveData.leftMargin + modalChartActiveData.plotWidth) {
+                    dragTarget = "yAxis"; // Dragging price scale on the right
+                    canvas.style.cursor = "ns-resize";
+                } else {
+                    dragTarget = "chart"; // Dragging chart area
+                    canvas.style.cursor = "grabbing";
+                }
+            }
+
+            function onPointerMove(evt) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+                const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+                const localX = clientX - rect.left;
+                const localY = clientY - rect.top;
+
+                if (isDragging) {
+                    if (tooltip) tooltip.style.display = "none";
+
+                    if (dragTarget === "yAxis") {
+                        // Dragging price scale stretches/compresses vertically
+                        const deltaY = startY - clientY;
+                        const factor = 1 + (deltaY / 100);
+                        modalChartStretchY = Math.max(0.3, Math.min(5.0, initialStretchY * factor));
+                        updateModalChartZoomDisplay();
+                        renderModalMiniChart();
+                    } else if (dragTarget === "chart") {
+                        // Dragging chart pans horizontally & vertically
+                        const deltaX = clientX - startX;
+                        const deltaY = clientY - startY;
+
+                        // Calculate horizontal pan in candle units
+                        const candlePixelWidth = modalChartActiveData.plotWidth / modalChartActiveData.visibleCount;
+                        const candleShift = deltaX / candlePixelWidth;
+                        modalChartPanX = initialPanX - candleShift;
+
+                        // Calculate vertical pan in price units
+                        const priceShift = (deltaY / modalChartActiveData.plotHeight) * modalChartActiveData.plotRange;
+                        modalChartPanY = initialPanY + priceShift;
+
+                        renderModalMiniChart();
+                    }
+                    return;
+                }
+
+                // Hover inspection tooltip
+                if (!modalChartActiveData || !tooltip) return;
+                const { leftMargin, plotWidth, startIdx, endIdx, visibleCount, allCandles, bb } = modalChartActiveData;
+
+                if (localX < leftMargin || localX > leftMargin + plotWidth) {
+                    tooltip.style.display = "none";
+                    if (localX > leftMargin + plotWidth) {
+                        canvas.style.cursor = "ns-resize";
+                    } else {
+                        canvas.style.cursor = "default";
+                    }
+                    return;
+                }
+                canvas.style.cursor = "grab";
+
+                const relX = (localX - leftMargin) / plotWidth;
+                const candleOffset = Math.round(relX * (visibleCount - 1));
+                const candleIdx = Math.max(0, Math.min(allCandles.length - 1, startIdx + candleOffset));
+                const c = allCandles[candleIdx];
+                if (!c) { tooltip.style.display = "none"; return; }
+
+                const date = new Date(c.time);
+                const timeStr = date.toLocaleTimeString();
+                const upperBB = bb.upper[candleIdx] !== null ? formatBybitPrice(bb.upper[candleIdx], modalTickSize) : "—";
+                const lowerBB = bb.lower[candleIdx] !== null ? formatBybitPrice(bb.lower[candleIdx], modalTickSize) : "—";
+
+                tooltip.innerHTML = `
+                    <div style="font-weight:bold; color:#ffb13b; margin-bottom:2px;">${timeStr}</div>
+                    <div>O: ${c.open} &nbsp; H: ${c.high}</div>
+                    <div>L: ${c.low} &nbsp; C: ${c.close}</div>
+                    <div style="color:#26a69a; margin-top:2px;">Upper BB: ${upperBB}</div>
+                    <div style="color:#ef5350;">Lower BB: ${lowerBB}</div>
+                `;
+
+                tooltip.style.display = "block";
+                const tooltipX = Math.min(rect.width - 140, Math.max(6, localX - 50));
+                tooltip.style.left = tooltipX + "px";
+                tooltip.style.top = "8px";
+            }
+
+            function onPointerUp() {
+                isDragging = false;
+                dragTarget = null;
+                canvas.style.cursor = "grab";
+            }
+
+            function onPointerLeave() {
+                isDragging = false;
+                dragTarget = null;
+                if (tooltip) tooltip.style.display = "none";
+                canvas.style.cursor = "grab";
+            }
+
+            canvas.addEventListener("mousedown", onPointerDown);
+            window.addEventListener("mousemove", onPointerMove);
+            window.addEventListener("mouseup", onPointerUp);
+            canvas.addEventListener("mouseleave", onPointerLeave);
+
+            // Touch support for mobile
+            canvas.addEventListener("touchstart", onPointerDown, { passive: true });
+            canvas.addEventListener("touchmove", onPointerMove, { passive: true });
+            canvas.addEventListener("touchend", onPointerUp, { passive: true });
+        })();
 
         /**
          * Fetch last 100 1-minute candles for the modal via REST API
@@ -4649,6 +4883,7 @@
 
             modalActiveSymbol = symbol;
             modalTickSize = tickSize || 0.00000001;
+            resetModalChartTransform();
 
             const titleElem = document.getElementById("modalChartSymbolTitle");
             if (titleElem) titleElem.textContent = symbol;
@@ -4812,6 +5047,7 @@
             }
             modalActiveSymbol = null;
             modalCandles = []; // Wipe 100-candle buffer from memory
+            resetModalChartTransform();
 
             // Clear canvas context to release raster memory
             const canvas = document.getElementById("modalChartCanvas");
