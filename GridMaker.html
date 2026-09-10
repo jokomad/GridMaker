@@ -471,8 +471,8 @@
             background: #18181c;
             border: 1px solid #444;
             border-radius: 12px;
-            max-width: 460px;
-            width: 90%;
+            max-width: 560px;
+            width: 92%;
             padding: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
@@ -1021,6 +1021,30 @@
     <div id="createBotModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-title">🚀 Launch Neutral Grid Bot</div>
+            <!-- Live Candlestick & Bollinger Bands Mini Chart -->
+            <div style="background: #0d0f14; border: 1px solid #2b2c34; border-radius: 8px; padding: 10px 12px 8px; margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 11px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="modalChartSymbolTitle" style="font-weight: bold; color: #fff; font-size: 12px;">—</span>
+                        <span style="color: #888;">• 100 Candles (1m)</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; font-size: 10px;">
+                        <span style="display: flex; align-items: center; gap: 4px; color: #26a69a;">
+                            <span style="display: inline-block; width: 10px; height: 2px; background: #26a69a;"></span> Upper BB
+                        </span>
+                        <span style="display: flex; align-items: center; gap: 4px; color: #ef5350;">
+                            <span style="display: inline-block; width: 10px; height: 2px; background: #ef5350;"></span> Lower BB
+                        </span>
+                        <span id="modalChartLiveBadge" style="background: #1e3a29; color: #73dc73; padding: 1px 6px; border-radius: 3px; font-weight: bold; font-size: 9px;">LIVE WS</span>
+                    </div>
+                </div>
+                <div id="modalChartContainer" style="position: relative; width: 100%; height: 150px;">
+                    <canvas id="modalChartCanvas" style="width: 100%; height: 100%; display: block; border-radius: 4px;"></canvas>
+                    <div id="modalChartLoading" style="position: absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; background:rgba(13,15,20,0.85); color:#888; font-size:12px; border-radius:4px;">
+                        Loading 100 candles...
+                    </div>
+                </div>
+            </div>
             <div class="modal-details">
                 <div class="modal-row">
                     <span style="color: #888;">Symbol:</span>
@@ -3560,6 +3584,10 @@
                 if (selectedResult) {
                     renderSymbolChart(selectedResult);
                 }
+                const modal = document.getElementById("createBotModal");
+                if (modal && modal.style.display !== "none" && modalCandles.length > 0) {
+                    renderModalMiniChart();
+                }
             });
         })();
 
@@ -4312,6 +4340,8 @@
         let modalTickerWs = null;
         let modalActiveSymbol = null;
         let modalLatestPrice = null;
+        let modalCandles = [];
+        let modalTickSize = 0.00000001;
 
         /**
          * Update modal grid values based on a given price
@@ -4319,11 +4349,12 @@
         function updateModalGridPrices(currentPrice, tickSize) {
             if (!Number.isFinite(currentPrice) || currentPrice <= 0) return;
             modalLatestPrice = currentPrice;
+            if (tickSize) modalTickSize = tickSize;
 
-            const botLower = snapToTick(currentPrice * 0.50, tickSize);
-            const botUpper = snapToTick(currentPrice * 1.50, tickSize);
-            const botLowerFormatted = formatBybitPrice(botLower, tickSize);
-            const botUpperFormatted = formatBybitPrice(botUpper, tickSize);
+            const botLower = snapToTick(currentPrice * 0.50, modalTickSize);
+            const botUpper = snapToTick(currentPrice * 1.50, modalTickSize);
+            const botLowerFormatted = formatBybitPrice(botLower, modalTickSize);
+            const botUpperFormatted = formatBybitPrice(botUpper, modalTickSize);
             const botGrids = 500;
             const botLeverage = 5;
 
@@ -4331,7 +4362,7 @@
             const profitPerGrid = ((Math.pow(botUpper / botLower, 1 / botGrids) - 1) * 100);
 
             const currPriceElem = document.getElementById("modalBotCurrentPrice");
-            if (currPriceElem) currPriceElem.textContent = "$" + formatBybitPrice(currentPrice, tickSize);
+            if (currPriceElem) currPriceElem.textContent = "$" + formatBybitPrice(currentPrice, modalTickSize);
 
             const lowerElem = document.getElementById("modalBotLower");
             if (lowerElem) lowerElem.textContent = botLowerFormatted;
@@ -4350,17 +4381,292 @@
         }
 
         /**
-         * Connect to Bybit Linear WebSocket ticker for live price updates in popup
+         * Calculate Upper & Lower Bollinger Bands (20 period, 2 std dev).
+         * Middle SMA is intentionally omitted.
+         */
+        function calculateModalBollingerBands(candles, period = 20, multiplier = 2) {
+            const upper = [];
+            const lower = [];
+
+            for (let i = 0; i < candles.length; i++) {
+                if (i < period - 1) {
+                    upper.push(null);
+                    lower.push(null);
+                    continue;
+                }
+                let sum = 0;
+                for (let j = 0; j < period; j++) {
+                    sum += candles[i - j].close;
+                }
+                const mean = sum / period;
+
+                let varSum = 0;
+                for (let j = 0; j < period; j++) {
+                    varSum += Math.pow(candles[i - j].close - mean, 2);
+                }
+                const stdDev = Math.sqrt(varSum / period);
+
+                upper.push(mean + multiplier * stdDev);
+                lower.push(mean - multiplier * stdDev);
+            }
+            return { upper, lower };
+        }
+
+        /**
+         * Render 100 candles mini chart with Upper and Lower Bollinger Bands (no middle band)
+         */
+        function renderModalMiniChart() {
+            const canvas = document.getElementById("modalChartCanvas");
+            const container = document.getElementById("modalChartContainer");
+            if (!canvas || !container || modalCandles.length === 0) return;
+
+            const width = container.clientWidth || 500;
+            const height = container.clientHeight || 150;
+
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + "px";
+            canvas.style.height = height + "px";
+
+            const ctx = canvas.getContext("2d");
+            ctx.scale(dpr, dpr);
+
+            // Background
+            ctx.fillStyle = "#0c0e12";
+            ctx.fillRect(0, 0, width, height);
+
+            const candles = modalCandles;
+            const bb = calculateModalBollingerBands(candles, 20, 2);
+
+            // Compute price range across candles and bands
+            let minP = Infinity;
+            let maxP = -Infinity;
+            for (let i = 0; i < candles.length; i++) {
+                const c = candles[i];
+                if (c.low < minP) minP = c.low;
+                if (c.high > maxP) maxP = c.high;
+                if (bb.lower[i] !== null && bb.lower[i] < minP) minP = bb.lower[i];
+                if (bb.upper[i] !== null && bb.upper[i] > maxP) maxP = bb.upper[i];
+            }
+
+            if (!Number.isFinite(minP) || !Number.isFinite(maxP) || minP === maxP) {
+                minP = (modalLatestPrice || 1) * 0.99;
+                maxP = (modalLatestPrice || 1) * 1.01;
+            }
+
+            const pRange = maxP - minP;
+            const pPadding = pRange * 0.06;
+            const plotMin = minP - pPadding;
+            const plotMax = maxP + pPadding;
+            const plotRange = plotMax - plotMin;
+
+            const leftMargin = 4;
+            const rightMargin = 60;
+            const topMargin = 8;
+            const bottomMargin = 16;
+            const plotWidth = Math.max(10, width - leftMargin - rightMargin);
+            const plotHeight = Math.max(10, height - topMargin - bottomMargin);
+
+            function priceToY(price) {
+                return topMargin + plotHeight * (1 - (price - plotMin) / plotRange);
+            }
+
+            function indexToX(index) {
+                return leftMargin + (index / (candles.length - 1 || 1)) * plotWidth;
+            }
+
+            // Draw horizontal subtle grid lines & price labels
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+            ctx.lineWidth = 1;
+            const gridSteps = 3;
+            for (let i = 0; i <= gridSteps; i++) {
+                const p = plotMin + (plotRange * i) / gridSteps;
+                const y = priceToY(p);
+                ctx.beginPath();
+                ctx.moveTo(leftMargin, y);
+                ctx.lineTo(leftMargin + plotWidth, y);
+                ctx.stroke();
+
+                ctx.fillStyle = "#666";
+                ctx.font = "9px sans-serif";
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+                ctx.fillText(formatBybitPrice(p, modalTickSize), leftMargin + plotWidth + 4, y);
+            }
+
+            // Bollinger Bands Shaded Area between Upper and Lower Bands
+            ctx.beginPath();
+            let started = false;
+            for (let i = 0; i < candles.length; i++) {
+                if (bb.upper[i] !== null) {
+                    const x = indexToX(i);
+                    const y = priceToY(bb.upper[i]);
+                    if (!started) {
+                        ctx.moveTo(x, y);
+                        started = true;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+            }
+            for (let i = candles.length - 1; i >= 0; i--) {
+                if (bb.lower[i] !== null) {
+                    const x = indexToX(i);
+                    const y = priceToY(bb.lower[i]);
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fillStyle = "rgba(0, 180, 160, 0.06)";
+            ctx.fill();
+
+            // Draw Bollinger Upper Band Line (Teal)
+            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = "rgba(38, 166, 154, 0.85)";
+            ctx.beginPath();
+            started = false;
+            for (let i = 0; i < candles.length; i++) {
+                if (bb.upper[i] !== null) {
+                    const x = indexToX(i);
+                    const y = priceToY(bb.upper[i]);
+                    if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+                }
+            }
+            ctx.stroke();
+
+            // Draw Bollinger Lower Band Line (Reddish)
+            ctx.strokeStyle = "rgba(239, 83, 80, 0.85)";
+            ctx.beginPath();
+            started = false;
+            for (let i = 0; i < candles.length; i++) {
+                if (bb.lower[i] !== null) {
+                    const x = indexToX(i);
+                    const y = priceToY(bb.lower[i]);
+                    if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+                }
+            }
+            ctx.stroke();
+
+            // Draw 100 Candlesticks
+            const candleSpacing = plotWidth / candles.length;
+            const candleWidth = Math.max(1, candleSpacing * 0.7);
+
+            for (let i = 0; i < candles.length; i++) {
+                const c = candles[i];
+                const x = indexToX(i);
+                const yOpen = priceToY(c.open);
+                const yClose = priceToY(c.close);
+                const yHigh = priceToY(c.high);
+                const yLow = priceToY(c.low);
+
+                const isUp = c.close >= c.open;
+                const color = isUp ? "#26a69a" : "#ef5350";
+
+                // Wick
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, yHigh);
+                ctx.lineTo(x, yLow);
+                ctx.stroke();
+
+                // Body
+                ctx.fillStyle = color;
+                const bodyTop = Math.min(yOpen, yClose);
+                const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
+                ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+            }
+
+            // Current Price Dash Line & Badge
+            const lastCandle = candles[candles.length - 1];
+            const currentPrice = modalLatestPrice || (lastCandle ? lastCandle.close : 0);
+            if (currentPrice > 0) {
+                const yCurrent = priceToY(currentPrice);
+                ctx.strokeStyle = "#ffb13b";
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(leftMargin, yCurrent);
+                ctx.lineTo(leftMargin + plotWidth, yCurrent);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Badge
+                ctx.fillStyle = "#ffb13b";
+                ctx.fillRect(leftMargin + plotWidth + 2, yCurrent - 7, rightMargin - 4, 14);
+                ctx.fillStyle = "#000";
+                ctx.font = "bold 9px sans-serif";
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+                ctx.fillText(formatBybitPrice(currentPrice, modalTickSize), leftMargin + plotWidth + 4, yCurrent);
+            }
+        }
+
+        /**
+         * Fetch last 100 1-minute candles for the modal via REST API
+         */
+        async function fetchModalCandles(symbol) {
+            const loadingElem = document.getElementById("modalChartLoading");
+            if (loadingElem) loadingElem.style.display = "flex";
+
+            try {
+                const url = `/v5/market/kline?category=linear&symbol=${encodeURIComponent(symbol)}&interval=1&limit=100`;
+                const data = await apiRequest(url);
+
+                if (modalActiveSymbol !== symbol) return; // Discard if symbol switched
+
+                const rows = (data && data.result && data.result.list) || [];
+                // Bybit returns newest first, reverse to oldest -> newest
+                rows.reverse();
+
+                modalCandles = rows.map(r => ({
+                    time: Number(r[0]),
+                    open: Number(r[1]),
+                    high: Number(r[2]),
+                    low: Number(r[3]),
+                    close: Number(r[4]),
+                    volume: Number(r[5]),
+                    turnover: Number(r[6])
+                }));
+
+                if (loadingElem) loadingElem.style.display = "none";
+                renderModalMiniChart();
+            } catch (err) {
+                console.warn("Could not fetch 100 candles for modal:", err);
+                if (loadingElem) {
+                    loadingElem.textContent = "Chart unavailable";
+                    loadingElem.style.display = "flex";
+                }
+            }
+        }
+
+        /**
+         * Connect to Bybit Linear WebSocket for live ticker & live 1m kline updates in popup
          */
         function connectModalWebSocket(symbol, tickSize) {
             disconnectModalWebSocket();
 
             modalActiveSymbol = symbol;
+            modalTickSize = tickSize || 0.00000001;
+
+            const titleElem = document.getElementById("modalChartSymbolTitle");
+            if (titleElem) titleElem.textContent = symbol;
+
             const wsIndicator = document.getElementById("modalWsIndicator");
+            const liveBadge = document.getElementById("modalChartLiveBadge");
             if (wsIndicator) {
                 wsIndicator.style.background = "#ffd166"; // Yellow while connecting
                 wsIndicator.title = "Connecting to Bybit WebSocket...";
             }
+            if (liveBadge) {
+                liveBadge.style.background = "#332a10";
+                liveBadge.style.color = "#ffd166";
+                liveBadge.textContent = "CONNECTING";
+            }
+
+            // Fetch initial 100 candles via REST
+            fetchModalCandles(symbol);
 
             try {
                 const ws = new WebSocket("wss://stream.bybit.com/v5/public/linear");
@@ -4373,12 +4679,20 @@
                     }
                     if (wsIndicator) {
                         wsIndicator.style.background = "#73dc73"; // Green connected
-                        wsIndicator.title = "Live Bybit WebSocket ticker connected";
+                        wsIndicator.title = "Live Bybit WebSocket ticker & kline connected";
                     }
-                    // Subscribe to real-time ticker topic
+                    if (liveBadge) {
+                        liveBadge.style.background = "#1e3a29";
+                        liveBadge.style.color = "#73dc73";
+                        liveBadge.textContent = "LIVE WS";
+                    }
+                    // Subscribe to real-time ticker and 1-minute kline topic
                     const subMsg = {
                         op: "subscribe",
-                        args: [`tickers.${symbol}`]
+                        args: [
+                            `tickers.${symbol}`,
+                            `kline.1.${symbol}`
+                        ]
                     };
                     ws.send(JSON.stringify(subMsg));
                 };
@@ -4387,14 +4701,66 @@
                     if (ws !== modalTickerWs) return;
                     try {
                         const msg = JSON.parse(event.data);
+
+                        // 1. Live Ticker: update dynamic grid prices
                         if (msg.topic === `tickers.${symbol}` && msg.data) {
                             const lastPriceStr = msg.data.lastPrice;
                             if (lastPriceStr) {
                                 const newPrice = parseFloat(lastPriceStr);
                                 if (Number.isFinite(newPrice) && newPrice > 0) {
-                                    updateModalGridPrices(newPrice, tickSize);
+                                    updateModalGridPrices(newPrice, modalTickSize);
+                                    // Also update last candle close & high/low if available
+                                    if (modalCandles.length > 0) {
+                                        const lastC = modalCandles[modalCandles.length - 1];
+                                        lastC.close = newPrice;
+                                        if (newPrice > lastC.high) lastC.high = newPrice;
+                                        if (newPrice < lastC.low) lastC.low = newPrice;
+                                    }
+                                    renderModalMiniChart();
                                 }
                             }
+                        }
+
+                        // 2. Live Kline: update or append to the 100-candle buffer
+                        if (msg.topic === `kline.1.${symbol}` && Array.isArray(msg.data)) {
+                            msg.data.forEach(kd => {
+                                const kTime = Number(kd.start);
+                                const kOpen = Number(kd.open);
+                                const kHigh = Number(kd.high);
+                                const kLow = Number(kd.low);
+                                const kClose = Number(kd.close);
+                                const kVol = Number(kd.volume);
+                                const kTurnover = Number(kd.turnover);
+
+                                if (modalCandles.length === 0) {
+                                    modalCandles.push({
+                                        time: kTime, open: kOpen, high: kHigh, low: kLow, close: kClose,
+                                        volume: kVol, turnover: kTurnover
+                                    });
+                                } else {
+                                    const lastC = modalCandles[modalCandles.length - 1];
+                                    if (lastC.time === kTime) {
+                                        // Update active candle
+                                        lastC.open = kOpen;
+                                        lastC.high = kHigh;
+                                        lastC.low = kLow;
+                                        lastC.close = kClose;
+                                        lastC.volume = kVol;
+                                        lastC.turnover = kTurnover;
+                                    } else if (kTime > lastC.time) {
+                                        // New candle opened, keep fixed at 100 candles
+                                        modalCandles.push({
+                                            time: kTime, open: kOpen, high: kHigh, low: kLow, close: kClose,
+                                            volume: kVol, turnover: kTurnover
+                                        });
+                                        while (modalCandles.length > 100) {
+                                            modalCandles.shift();
+                                        }
+                                    }
+                                }
+                                updateModalGridPrices(kClose, modalTickSize);
+                            });
+                            renderModalMiniChart();
                         }
                     } catch (err) {
                         // ignore malformed packets
@@ -4406,6 +4772,11 @@
                         wsIndicator.style.background = "#ff7777";
                         wsIndicator.title = "WebSocket error";
                     }
+                    if (liveBadge) {
+                        liveBadge.style.background = "#3d1b1b";
+                        liveBadge.style.color = "#ff7777";
+                        liveBadge.textContent = "WS ERROR";
+                    }
                 };
 
                 ws.onclose = () => {
@@ -4415,6 +4786,11 @@
                             wsIndicator.style.background = "#777";
                             wsIndicator.title = "WebSocket disconnected";
                         }
+                        if (liveBadge) {
+                            liveBadge.style.background = "#222";
+                            liveBadge.style.color = "#888";
+                            liveBadge.textContent = "OFFLINE";
+                        }
                     }
                 };
             } catch (err) {
@@ -4423,7 +4799,7 @@
         }
 
         /**
-         * Cleanly close active WebSocket connection
+         * Cleanly close active WebSocket connection and clear candle memory
          */
         function disconnectModalWebSocket() {
             if (modalTickerWs) {
@@ -4435,6 +4811,14 @@
                 modalTickerWs = null;
             }
             modalActiveSymbol = null;
+            modalCandles = []; // Wipe 100-candle buffer from memory
+
+            // Clear canvas context to release raster memory
+            const canvas = document.getElementById("modalChartCanvas");
+            if (canvas) {
+                const ctx = canvas.getContext("2d");
+                if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         function promptCreateGridBot() {
@@ -4456,10 +4840,11 @@
             // Initialize display with current snapshot price
             updateModalGridPrices(currentPrice, tickSize);
 
-            // Connect live Bybit WebSocket for real-time adjustments
-            connectModalWebSocket(symbol, tickSize);
-
+            // Display modal first so container has valid layout dimensions
             document.getElementById("createBotModal").style.display = "flex";
+
+            // Connect live Bybit WebSocket for real-time adjustments & 100-candle live chart
+            connectModalWebSocket(symbol, tickSize);
         }
 
         function closeCreateBotModal() {
