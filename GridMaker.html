@@ -1035,11 +1035,18 @@
                     <span id="modalBotLeverage" style="font-weight: bold; color: #73dc73;">5x</span>
                 </div>
                 <div class="modal-row">
-                    <span style="color: #888;">Lower Grid Price:</span>
+                    <span style="color: #888; display: flex; align-items: center; gap: 6px;">
+                        <span id="modalWsIndicator" class="status-indicator-dot" style="width: 7px; height: 7px; background: #73dc73;" title="Live Bybit WebSocket ticker connected"></span>
+                        Current Price:
+                    </span>
+                    <span id="modalBotCurrentPrice" style="font-weight: bold; color: #ffb13b;">—</span>
+                </div>
+                <div class="modal-row">
+                    <span style="color: #888;">Lower Grid Price (-50%):</span>
                     <span id="modalBotLower" style="font-weight: bold;">—</span>
                 </div>
                 <div class="modal-row">
-                    <span style="color: #888;">Upper Grid Price:</span>
+                    <span style="color: #888;">Upper Grid Price (+50%):</span>
                     <span id="modalBotUpper" style="font-weight: bold;">—</span>
                 </div>
                 <div class="modal-row">
@@ -3150,6 +3157,16 @@
             */
             renderSymbolChart(result);
 
+            /*
+                If Start Bot modal is open, dynamically switch WebSocket to the newly selected symbol
+            */
+            const modalElem = document.getElementById("createBotModal");
+            if (modalElem && modalElem.style.display !== "none") {
+                if (modalActiveSymbol !== result.symbol) {
+                    promptCreateGridBot();
+                }
+            }
+
             addLog(
                 "Selected " +
                 result.symbol +
@@ -4292,17 +4309,17 @@
         ========================================================= */
 
         let pnlPollInterval = null;
+        let modalTickerWs = null;
+        let modalActiveSymbol = null;
+        let modalLatestPrice = null;
 
-        function promptCreateGridBot() {
-            if (!selectedResult) {
-                alert("Please select a recommended coin from the list first.");
-                return;
-            }
+        /**
+         * Update modal grid values based on a given price
+         */
+        function updateModalGridPrices(currentPrice, tickSize) {
+            if (!Number.isFinite(currentPrice) || currentPrice <= 0) return;
+            modalLatestPrice = currentPrice;
 
-            const currentPrice = selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
-            const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
-
-            // 50% below / 50% above current price, snapped to tick size
             const botLower = snapToTick(currentPrice * 0.50, tickSize);
             const botUpper = snapToTick(currentPrice * 1.50, tickSize);
             const botLowerFormatted = formatBybitPrice(botLower, tickSize);
@@ -4313,29 +4330,148 @@
             // Arithmetic profit per grid estimate: ((upper/lower)^(1/grids) - 1) * 100
             const profitPerGrid = ((Math.pow(botUpper / botLower, 1 / botGrids) - 1) * 100);
 
+            const currPriceElem = document.getElementById("modalBotCurrentPrice");
+            if (currPriceElem) currPriceElem.textContent = "$" + formatBybitPrice(currentPrice, tickSize);
+
+            const lowerElem = document.getElementById("modalBotLower");
+            if (lowerElem) lowerElem.textContent = botLowerFormatted;
+
+            const upperElem = document.getElementById("modalBotUpper");
+            if (upperElem) upperElem.textContent = botUpperFormatted;
+
+            const gridsElem = document.getElementById("modalBotGrids");
+            if (gridsElem) gridsElem.textContent = botGrids;
+
+            const profitElem = document.getElementById("modalBotProfitGrid");
+            if (profitElem) profitElem.textContent = profitPerGrid.toFixed(4) + "%";
+
+            const modalLev = document.getElementById("modalBotLeverage");
+            if (modalLev) modalLev.textContent = botLeverage + "x";
+        }
+
+        /**
+         * Connect to Bybit Linear WebSocket ticker for live price updates in popup
+         */
+        function connectModalWebSocket(symbol, tickSize) {
+            disconnectModalWebSocket();
+
+            modalActiveSymbol = symbol;
+            const wsIndicator = document.getElementById("modalWsIndicator");
+            if (wsIndicator) {
+                wsIndicator.style.background = "#ffd166"; // Yellow while connecting
+                wsIndicator.title = "Connecting to Bybit WebSocket...";
+            }
+
+            try {
+                const ws = new WebSocket("wss://stream.bybit.com/v5/public/linear");
+                modalTickerWs = ws;
+
+                ws.onopen = () => {
+                    if (ws !== modalTickerWs) {
+                        try { ws.close(); } catch(e) {}
+                        return;
+                    }
+                    if (wsIndicator) {
+                        wsIndicator.style.background = "#73dc73"; // Green connected
+                        wsIndicator.title = "Live Bybit WebSocket ticker connected";
+                    }
+                    // Subscribe to real-time ticker topic
+                    const subMsg = {
+                        op: "subscribe",
+                        args: [`tickers.${symbol}`]
+                    };
+                    ws.send(JSON.stringify(subMsg));
+                };
+
+                ws.onmessage = (event) => {
+                    if (ws !== modalTickerWs) return;
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.topic === `tickers.${symbol}` && msg.data) {
+                            const lastPriceStr = msg.data.lastPrice;
+                            if (lastPriceStr) {
+                                const newPrice = parseFloat(lastPriceStr);
+                                if (Number.isFinite(newPrice) && newPrice > 0) {
+                                    updateModalGridPrices(newPrice, tickSize);
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        // ignore malformed packets
+                    }
+                };
+
+                ws.onerror = () => {
+                    if (wsIndicator) {
+                        wsIndicator.style.background = "#ff7777";
+                        wsIndicator.title = "WebSocket error";
+                    }
+                };
+
+                ws.onclose = () => {
+                    if (ws === modalTickerWs) {
+                        modalTickerWs = null;
+                        if (wsIndicator) {
+                            wsIndicator.style.background = "#777";
+                            wsIndicator.title = "WebSocket disconnected";
+                        }
+                    }
+                };
+            } catch (err) {
+                console.warn("Could not initiate WebSocket for modal:", err);
+            }
+        }
+
+        /**
+         * Cleanly close active WebSocket connection
+         */
+        function disconnectModalWebSocket() {
+            if (modalTickerWs) {
+                try {
+                    if (modalTickerWs.readyState === WebSocket.OPEN || modalTickerWs.readyState === WebSocket.CONNECTING) {
+                        modalTickerWs.close();
+                    }
+                } catch (e) {}
+                modalTickerWs = null;
+            }
+            modalActiveSymbol = null;
+        }
+
+        function promptCreateGridBot() {
+            if (!selectedResult) {
+                alert("Please select a recommended coin from the list first.");
+                return;
+            }
+
+            const symbol = selectedResult.symbol;
+            const currentPrice = selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
+            const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
+
             const invInput = document.getElementById("botInvestmentInput");
             const investmentVal = invInput ? (parseFloat(invInput.value) || 50) : 50;
 
-            document.getElementById("modalBotSymbol").textContent = selectedResult.symbol;
-            document.getElementById("modalBotLower").textContent = botLowerFormatted;
-            document.getElementById("modalBotUpper").textContent = botUpperFormatted;
-            document.getElementById("modalBotGrids").textContent = botGrids;
-            document.getElementById("modalBotProfitGrid").textContent = profitPerGrid.toFixed(4) + "%";
+            document.getElementById("modalBotSymbol").textContent = symbol;
             document.getElementById("modalBotInvestment").textContent = investmentVal.toFixed(2) + " USDT";
-            const modalLev = document.getElementById("modalBotLeverage");
-            if (modalLev) modalLev.textContent = botLeverage + "x";
+
+            // Initialize display with current snapshot price
+            updateModalGridPrices(currentPrice, tickSize);
+
+            // Connect live Bybit WebSocket for real-time adjustments
+            connectModalWebSocket(symbol, tickSize);
 
             document.getElementById("createBotModal").style.display = "flex";
         }
 
         function closeCreateBotModal() {
+            disconnectModalWebSocket();
             document.getElementById("createBotModal").style.display = "none";
         }
 
         async function confirmCreateGridBot() {
             if (!selectedResult) return;
 
-            const currentPrice = selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
+            const symbol = selectedResult.symbol;
+            const currentPrice = modalLatestPrice || selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
             const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
 
             // Parameters for creation: 50% below, 50% above, 500 grids, 5x leverage
@@ -4353,14 +4489,14 @@
             btnConfirm.disabled = true;
             btnConfirm.textContent = "Starting...";
 
-            addLog(`Creating Neutral Grid Bot for ${selectedResult.symbol} ($${investment} @ ${botLeverage}x, 500 grids)...`, "info");
+            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 500 grids)...`, "info");
 
             try {
                 const response = await fetch("/api/bot/create", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        symbol: selectedResult.symbol,
+                        symbol: symbol,
                         lowerPrice: botLowerFormatted,
                         upperPrice: botUpperFormatted,
                         gridCount: botGrids,
