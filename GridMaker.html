@@ -4369,7 +4369,7 @@
             const botUpper = snapToTick(currentPrice * 1.50, modalTickSize);
             const botLowerFormatted = formatBybitPrice(botLower, modalTickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, modalTickSize);
-            const botGrids = 500;
+            const botGrids = 200;
             const botLeverage = 5;
 
             // Arithmetic profit per grid estimate: ((upper/lower)^(1/grids) - 1) * 100
@@ -5100,7 +5100,7 @@
             const botUpper = snapToTick(currentPrice * 1.50, tickSize);
             const botLowerFormatted = formatBybitPrice(botLower, tickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, tickSize);
-            const botGrids = 500;
+            const botGrids = 200;
             const botLeverage = 5;
 
             const invInput = document.getElementById("botInvestmentInput");
@@ -5110,7 +5110,7 @@
             btnConfirm.disabled = true;
             btnConfirm.textContent = "Starting...";
 
-            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 500 grids)...`, "info");
+            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids)...`, "info");
 
             try {
                 const response = await fetch("/api/bot/create", {
