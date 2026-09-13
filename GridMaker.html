@@ -1300,20 +1300,26 @@
                     <span>🤖</span> Autotrader Configuration
                 </div>
 
-                <!-- 1. BOT INVESTMENT SELECTION BOXES (50, 100, 250) -->
+                <!-- 1. BOT INVESTMENT SELECTION BOXES (100, 200, 300, 400, 500) -->
                 <div style="margin-top: 14px;">
                     <div style="font-size: 13px; font-weight: 600; color: #aab; text-transform: uppercase; letter-spacing: 0.5px;">
                         Select Bot Investment (USDT)
                     </div>
                     <div class="investment-selector-group">
-                        <div class="investment-box selected" id="invBox50" onclick="selectAutoTraderInvestment(50)">
-                            $50
-                        </div>
-                        <div class="investment-box" id="invBox100" onclick="selectAutoTraderInvestment(100)">
+                        <div class="investment-box selected" id="invBox100" onclick="selectAutoTraderInvestment(100)">
                             $100
                         </div>
-                        <div class="investment-box" id="invBox250" onclick="selectAutoTraderInvestment(250)">
-                            $250
+                        <div class="investment-box" id="invBox200" onclick="selectAutoTraderInvestment(200)">
+                            $200
+                        </div>
+                        <div class="investment-box" id="invBox300" onclick="selectAutoTraderInvestment(300)">
+                            $300
+                        </div>
+                        <div class="investment-box" id="invBox400" onclick="selectAutoTraderInvestment(400)">
+                            $400
+                        </div>
+                        <div class="investment-box" id="invBox500" onclick="selectAutoTraderInvestment(500)">
+                            $500
                         </div>
                     </div>
                 </div>
@@ -1339,7 +1345,7 @@
                         </div>
                         <div class="autotrader-pnl-item">
                             <span class="autotrader-pnl-label">Selected Investment</span>
-                            <span class="autotrader-pnl-val" id="autoTraderSelectedInvestmentDisplay" style="color: #ffb13b;">$50</span>
+                            <span class="autotrader-pnl-val" id="autoTraderSelectedInvestmentDisplay" style="color: #ffb13b;">$100</span>
                         </div>
                         <div class="autotrader-pnl-item" style="border-left: 1px solid #2e3440; padding-left: 16px;">
                             <span class="autotrader-pnl-label">Funding Account (USDT)</span>
@@ -5725,7 +5731,7 @@
         ========================================================= */
 
         let activeAppTab = "manual"; // "manual" | "autotrader"
-        let autoTraderInvestment = 50; // 50, 100, 250 USDT
+        let autoTraderInvestment = 100; // 100, 200, 300, 400, 500 USDT
         let autoTraderRunning = false;
         let autoTraderStatus = "IDLE"; // "IDLE" | "MONITORING" | "STOPPING_PROFIT" | "WAITING_FUNDING" | "RESTARTING"
         let symbolRowCounter = 0;
@@ -5886,7 +5892,7 @@
         }
 
         /**
-         * Select Bot Investment (50, 100, 250 USDT)
+         * Select Bot Investment (100, 200, 300, 400, 500 USDT)
          */
         function selectAutoTraderInvestment(amount) {
             if (autoTraderRunning) {
@@ -5894,7 +5900,7 @@
                 return;
             }
             autoTraderInvestment = Number(amount);
-            [50, 100, 250].forEach(val => {
+            [100, 200, 300, 400, 500].forEach(val => {
                 const box = document.getElementById(`invBox${val}`);
                 if (box) {
                     box.classList.toggle("selected", val === autoTraderInvestment);
@@ -6692,7 +6698,7 @@
                 addLog(`🔄 Found persistent Autotrader state from database (Active: ${saved.running}). Restoring session...`, "info");
 
                 // Restore investment preset
-                if (saved.investment && [50, 100, 250].includes(Number(saved.investment))) {
+                if (saved.investment && [100, 200, 300, 400, 500].includes(Number(saved.investment))) {
                     selectAutoTraderInvestment(Number(saved.investment));
                 }
 
