@@ -738,6 +738,280 @@
                 min-height: 220px;
             }
         }
+
+        /* TAB SWITCHER */
+        .tab-switcher-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .tab-switch-box {
+            flex: 1;
+            background: #111418;
+            border: 2px solid #232730;
+            border-radius: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #8892a0;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .tab-switch-box:hover {
+            border-color: #3b4252;
+            color: #fff;
+            background: #15181f;
+        }
+
+        .tab-switch-box.active {
+            border-color: #ffb13b;
+            color: #ffb13b;
+            background: #1c1810;
+            box-shadow: 0 0 16px rgba(255, 177, 59, 0.15);
+        }
+
+        .tab-switch-box .tab-icon {
+            font-size: 18px;
+        }
+
+        /* AUTOTRADER PANEL */
+        .autotrader-panel {
+            background: #101216;
+            border: 1px solid #262b35;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .investment-selector-group {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0 20px 0;
+        }
+
+        .investment-box {
+            flex: 1;
+            max-width: 140px;
+            background: #181b21;
+            border: 2px solid #2e3440;
+            border-radius: 10px;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .investment-box:hover {
+            border-color: #4c566a;
+            color: #fff;
+        }
+
+        .investment-box.selected {
+            border-color: #73dc73;
+            color: #73dc73;
+            background: #142217;
+            box-shadow: 0 0 14px rgba(115, 220, 115, 0.2);
+        }
+
+        .autotrader-pnl-banner {
+            background: #15181f;
+            border: 1px solid #2a313d;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .autotrader-pnl-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .autotrader-pnl-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .autotrader-pnl-label {
+            font-size: 11px;
+            color: #8892a0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .autotrader-pnl-val {
+            font-size: 20px;
+            font-weight: bold;
+            color: #eee;
+        }
+
+        .autotrader-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-autotrader-start {
+            background: #1a4422;
+            color: #73dc73;
+            border: 1px solid #2e7d32;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-autotrader-start:hover {
+            background: #256633;
+            color: #fff;
+        }
+
+        .btn-autotrader-stop {
+            background: #441a1a;
+            color: #ff6c6c;
+            border: 1px solid #7d2e2e;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-autotrader-stop:hover {
+            background: #662525;
+            color: #fff;
+        }
+
+        .symbol-inputs-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 720px;
+        }
+
+        .symbol-input-row {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: #14171e;
+            border: 1px solid #282f3d;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .symbol-input-top-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .symbol-search-input {
+            flex: 1;
+            background: #191d26;
+            border: 1px solid #333d4e;
+            color: #fff;
+            padding: 9px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 7px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .symbol-search-input:focus {
+            border-color: #ffb13b;
+        }
+
+        .symbol-search-input.locked {
+            border-color: #2e7d32;
+            background: #121c14;
+            color: #8ee88e;
+        }
+
+        .symbol-live-grid-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 11px;
+            background: #0d0f14;
+            border: 1px solid #232834;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #aaa;
+        }
+
+        .symbol-remove-btn {
+            background: #261b1b;
+            color: #ff7777;
+            border: 1px solid #4a2828;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .symbol-remove-btn:hover {
+            background: #4a2828;
+            color: #fff;
+        }
+
+        .symbol-autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 48px;
+            background: #181b22;
+            border: 1px solid #3b4252;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 4px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+        }
+
+        .symbol-autocomplete-item {
+            padding: 9px 14px;
+            font-size: 13px;
+            color: #ddd;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #232730;
+        }
+
+        .symbol-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .symbol-autocomplete-item:hover,
+        .symbol-autocomplete-item.highlighted {
+            background: #232834;
+            color: #ffb13b;
+        }
     </style>
 </head>
 
@@ -757,6 +1031,20 @@
             </button>
         </div>
 
+        <!-- TWO NAVIGATION TAB BOXES BELOW STATUS BAR -->
+        <div class="tab-switcher-row">
+            <div class="tab-switch-box active" id="tabBtnManual" onclick="switchAppTab('manual')">
+                <span class="tab-icon">⚡</span>
+                <span>Manual Bot Creator & Scanner</span>
+            </div>
+            <div class="tab-switch-box" id="tabBtnAutotrader" onclick="switchAppTab('autotrader')">
+                <span class="tab-icon">🤖</span>
+                <span>Autotrader</span>
+            </div>
+        </div>
+
+        <!-- TAB 1: MANUAL BOT CREATION & SCANNER (CURRENT WEBPAGE) -->
+        <div id="tabMainPage" style="display: block;">
 
         <!-- SELECTED RECOMMENDATION & CHART SPLIT -->
         <div class="rec-chart-layout">
@@ -1003,6 +1291,92 @@
         </div>
 
 
+        </div> <!-- END #tabMainPage -->
+
+        <!-- TAB 2: AUTOTRADER -->
+        <div id="tabAutotraderPage" style="display: none;">
+            <div class="autotrader-panel">
+                <div class="section-title" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>🤖</span> Autotrader Configuration
+                </div>
+
+                <!-- 1. BOT INVESTMENT SELECTION BOXES (50, 100, 250) -->
+                <div style="margin-top: 14px;">
+                    <div style="font-size: 13px; font-weight: 600; color: #aab; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Select Bot Investment (USDT)
+                    </div>
+                    <div class="investment-selector-group">
+                        <div class="investment-box selected" id="invBox50" onclick="selectAutoTraderInvestment(50)">
+                            $50
+                        </div>
+                        <div class="investment-box" id="invBox100" onclick="selectAutoTraderInvestment(100)">
+                            $100
+                        </div>
+                        <div class="investment-box" id="invBox250" onclick="selectAutoTraderInvestment(250)">
+                            $250
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PNL OF BOTS & START / STOP BUTTONS -->
+                <div class="autotrader-pnl-banner">
+                    <div class="autotrader-pnl-left">
+                        <div class="autotrader-pnl-item">
+                            <span class="autotrader-pnl-label">Total PnL ($)</span>
+                            <span class="autotrader-pnl-val" id="autoTraderPnlValue" style="color: #73dc73;">$0.00</span>
+                        </div>
+                        <div class="autotrader-pnl-item">
+                            <span class="autotrader-pnl-label">Return (%)</span>
+                            <span class="autotrader-pnl-val" id="autoTraderPnlPercent" style="color: #73dc73;">0.00%</span>
+                        </div>
+                        <div class="autotrader-pnl-item">
+                            <span class="autotrader-pnl-label">Active Bots</span>
+                            <span class="autotrader-pnl-val" id="autoTraderActiveBots">0</span>
+                        </div>
+                        <div class="autotrader-pnl-item" style="background: rgba(115, 220, 115, 0.08); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(115, 220, 115, 0.2);">
+                            <span class="autotrader-pnl-label" style="color: #8ee88e; font-weight: bold;">💰 Earned Since Start</span>
+                            <span class="autotrader-pnl-val" id="autoTraderTotalEarned" style="color: #73dc73;">$0.00</span>
+                        </div>
+                        <div class="autotrader-pnl-item">
+                            <span class="autotrader-pnl-label">Selected Investment</span>
+                            <span class="autotrader-pnl-val" id="autoTraderSelectedInvestmentDisplay" style="color: #ffb13b;">$50</span>
+                        </div>
+                        <div class="autotrader-pnl-item" style="border-left: 1px solid #2e3440; padding-left: 16px;">
+                            <span class="autotrader-pnl-label">Funding Account (USDT)</span>
+                            <span class="autotrader-pnl-val" id="autoTraderFundingBalanceDisplay" style="color: #64b5f6;">—</span>
+                        </div>
+                        <div class="autotrader-pnl-item">
+                            <span class="autotrader-pnl-label">Status</span>
+                            <span id="autoTraderStatusBadge" style="display: inline-block; font-size: 11px; font-weight: bold; background: #262b35; color: #aaa; padding: 3px 8px; border-radius: 4px;">IDLE</span>
+                        </div>
+                    </div>
+
+                    <div class="autotrader-actions">
+                        <button type="button" class="btn-autotrader-start" id="btnStartAutotrader" onclick="startAutotrader()">
+                            ▶ Start Autotrader
+                        </button>
+                        <button type="button" class="btn-autotrader-stop" id="btnStopAutotrader" onclick="stopAutotrader()">
+                            ⏹ Stop Autotrader
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. SYMBOL SELECTION WITH SMART AUTOCOMPLETE (NARROW DOWN) -->
+                <div>
+                    <div style="font-size: 13px; font-weight: 600; color: #aab; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                        Symbols to Autotrade (Live WebSocket Ticker -50% / +100%, 360 Grids, SL 25%)
+                    </div>
+                    <p style="color: #778; font-size: 12px; margin: 0 0 12px 0;">
+                        Type a symbol to select it (e.g. <strong style="color: #ffd166;">bonk</strong> &rarr; <strong style="color: #8ee88e;">1000BONKUSDT</strong>). Live WebSocket streams will calculate Lower (-50%), Upper (+100%), Stop Loss (-25%) with 360 grids. When PnL &gt; $0.50, bots are stopped and recreated once funding balance increases.
+                    </p>
+
+                    <div class="symbol-inputs-container" id="autoTraderSymbolInputsList">
+                        <!-- Dynamic symbol input rows generated here -->
+                    </div>
+                </div>
+            </div>
+        </div> <!-- END #tabAutotraderPage -->
+
         <!-- SCANNER LOG (AT BOTTOM) -->
         <div class="section-title">
             Scanner Log
@@ -1084,8 +1458,12 @@
                     <span id="modalBotLower" style="font-weight: bold;">—</span>
                 </div>
                 <div class="modal-row">
-                    <span style="color: #888;">Upper Grid Price (+50%):</span>
+                    <span style="color: #888;">Upper Grid Price (+100%):</span>
                     <span id="modalBotUpper" style="font-weight: bold;">—</span>
+                </div>
+                <div class="modal-row">
+                    <span style="color: #888;">Stop Loss (-25%):</span>
+                    <span id="modalBotStopLoss" style="font-weight: bold; color: #ef5350;">—</span>
                 </div>
                 <div class="modal-row">
                     <span style="color: #888;">Number of Grids:</span>
@@ -4366,10 +4744,12 @@
             if (tickSize) modalTickSize = tickSize;
 
             const botLower = snapToTick(currentPrice * 0.50, modalTickSize);
-            const botUpper = snapToTick(currentPrice * 1.50, modalTickSize);
+            const botUpper = snapToTick(currentPrice * 2.00, modalTickSize);
+            const botStopLoss = snapToTick(currentPrice * 0.75, modalTickSize);
             const botLowerFormatted = formatBybitPrice(botLower, modalTickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, modalTickSize);
-            const botGrids = 200;
+            const botStopLossFormatted = formatBybitPrice(botStopLoss, modalTickSize);
+            const botGrids = 360;
             const botLeverage = 5;
 
             // Arithmetic profit per grid estimate: ((upper/lower)^(1/grids) - 1) * 100
@@ -4383,6 +4763,9 @@
 
             const upperElem = document.getElementById("modalBotUpper");
             if (upperElem) upperElem.textContent = botUpperFormatted;
+
+            const stopLossElem = document.getElementById("modalBotStopLoss");
+            if (stopLossElem) stopLossElem.textContent = `25% ($${botStopLossFormatted})`;
 
             const gridsElem = document.getElementById("modalBotGrids");
             if (gridsElem) gridsElem.textContent = botGrids;
@@ -5095,12 +5478,14 @@
             const currentPrice = modalLatestPrice || selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
             const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
 
-            // Parameters for creation: 50% below, 50% above, 500 grids, 5x leverage
+            // Parameters for creation: 50% below, 100% above, 25% stop loss, 360 grids, 5x leverage
             const botLower = snapToTick(currentPrice * 0.50, tickSize);
-            const botUpper = snapToTick(currentPrice * 1.50, tickSize);
+            const botUpper = snapToTick(currentPrice * 2.00, tickSize);
+            const botStopLoss = snapToTick(currentPrice * 0.75, tickSize);
             const botLowerFormatted = formatBybitPrice(botLower, tickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, tickSize);
-            const botGrids = 200;
+            const botStopLossFormatted = formatBybitPrice(botStopLoss, tickSize);
+            const botGrids = 360;
             const botLeverage = 5;
 
             const invInput = document.getElementById("botInvestmentInput");
@@ -5110,7 +5495,7 @@
             btnConfirm.disabled = true;
             btnConfirm.textContent = "Starting...";
 
-            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids)...`, "info");
+            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 360 grids, SL: 25%)...`, "info");
 
             try {
                 const response = await fetch("/api/bot/create", {
@@ -5120,6 +5505,8 @@
                         symbol: symbol,
                         lowerPrice: botLowerFormatted,
                         upperPrice: botUpperFormatted,
+                        stopLossPrice: botStopLossFormatted,
+                        stopLossRatio: 0.25,
                         gridCount: botGrids,
                         leverage: botLeverage,
                         investment: investment,
@@ -5256,6 +5643,28 @@
                 if (countElem) countElem.textContent = summary.totalActiveBots;
                 if (capElem) capElem.textContent = "$" + summary.totalInvestment.toFixed(2);
 
+                // Sync Autotrader Tab PnL Banner
+                const atPnlValElem = document.getElementById("autoTraderPnlValue");
+                const atPnlPctElem = document.getElementById("autoTraderPnlPercent");
+                const atCountElem = document.getElementById("autoTraderActiveBots");
+
+                if (atPnlValElem) {
+                    atPnlValElem.textContent = (summary.totalPnl >= 0 ? "+$" : "-$") + Math.abs(summary.totalPnl).toFixed(2);
+                    atPnlValElem.style.color = summary.totalPnl >= 0 ? "#73dc73" : "#ff6c6c";
+                }
+
+                if (atPnlPctElem) {
+                    atPnlPctElem.textContent = (summary.totalPnlPercent >= 0 ? "+" : "") + summary.totalPnlPercent.toFixed(2) + "%";
+                    atPnlPctElem.style.color = summary.totalPnlPercent >= 0 ? "#73dc73" : "#ff6c6c";
+                }
+
+                if (atCountElem) atCountElem.textContent = summary.totalActiveBots;
+
+                // Sync Earned Since Start in Autotrader banner
+                if (typeof updateAutoTraderEarnedDisplay === "function") {
+                    updateAutoTraderEarnedDisplay(Number(summary.totalPnl) || 0);
+                }
+
                 // Update Table
                 const tbody = document.getElementById("activeBotsBody");
                 if (!tbody) return;
@@ -5310,6 +5719,1045 @@
         // Start polling for active bots every 5 seconds
         pnlPollInterval = setInterval(fetchActiveBots, 5000);
         fetchActiveBots();
+
+        /* =========================================================
+           AUTOTRADER LOGIC (TAB, INVESTMENTS, WS STREAMING & RECYCLE)
+        ========================================================= */
+
+        let activeAppTab = "manual"; // "manual" | "autotrader"
+        let autoTraderInvestment = 50; // 50, 100, 250 USDT
+        let autoTraderRunning = false;
+        let autoTraderStatus = "IDLE"; // "IDLE" | "MONITORING" | "STOPPING_PROFIT" | "WAITING_FUNDING" | "RESTARTING"
+        let symbolRowCounter = 0;
+
+        // Funding balance tracking
+        let initialFundingBalance = null; // baseline for current cycle comparison
+        let autoTraderSessionStartFundingBalance = null; // fixed baseline when "Start Autotrader" was clicked
+        let autoTraderRealizedProfitTotal = 0; // accumulated profit from completed cycles
+        let currentFundingBalance = null;
+
+        /**
+         * Update 'Earned Since Start' Box in UI
+         */
+        function updateAutoTraderEarnedDisplay(currentActivePnl = 0) {
+            const earnedElem = document.getElementById("autoTraderTotalEarned");
+            if (!earnedElem) return;
+
+            let earned = 0;
+            if (autoTraderSessionStartFundingBalance !== null && currentFundingBalance !== null) {
+                // If funding balance grew past starting balance, that is permanently realized profit
+                const fundingGain = Math.max(0, currentFundingBalance - autoTraderSessionStartFundingBalance);
+                earned = fundingGain + Math.max(0, currentActivePnl);
+            } else {
+                earned = autoTraderRealizedProfitTotal + Math.max(0, currentActivePnl);
+            }
+
+            earnedElem.textContent = (earned >= 0 ? "+$" : "-$") + Math.abs(earned).toFixed(2);
+            earnedElem.style.color = earned > 0 ? "#73dc73" : (earned < 0 ? "#ff6c6c" : "#eee");
+        }
+
+        /**
+         * Persist Autotrader state to MongoDB (with file fallback) via backend
+         */
+        async function syncAutotraderStateToBackend() {
+            try {
+                const activeSymbols = getActiveAutoTraderSymbols();
+                const payload = {
+                    running: autoTraderRunning,
+                    status: autoTraderStatus,
+                    investment: autoTraderInvestment,
+                    symbols: activeSymbols,
+                    initialFundingBalance: initialFundingBalance,
+                    sessionStartFundingBalance: autoTraderSessionStartFundingBalance,
+                    realizedProfitTotal: autoTraderRealizedProfitTotal
+                };
+
+                await fetch("/api/autotrader/state", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            } catch (err) {
+                console.warn("Could not persist autotrader state to backend:", err);
+            }
+        }
+
+        // WebSocket & ticker tracking for autotrader
+        let autoTraderWs = null;
+        let autoTraderWsPingTimer = null;
+        let autoTraderWsReconnectTimer = null;
+        let autoTraderWsSubscribedSymbols = new Set();
+        const autoTraderTickerData = {}; // { symbol: { price: Number, tickSize: Number, lower: Number, upper: Number, lastUpdate: Number } }
+
+        // Autotrader monitoring & recycling interval
+        let autoTraderCycleInterval = null;
+
+        /**
+         * Update Status Badge in Autotrader UI
+         */
+        function updateAutoTraderStatus(status, text = null, bg = null, color = null) {
+            autoTraderStatus = status;
+            const badge = document.getElementById("autoTraderStatusBadge");
+            if (!badge) return;
+
+            if (status === "IDLE") {
+                badge.textContent = text || "IDLE";
+                badge.style.background = bg || "#262b35";
+                badge.style.color = color || "#aaa";
+            } else if (status === "MONITORING") {
+                badge.textContent = text || "MONITORING PnL";
+                badge.style.background = bg || "#1e3a29";
+                badge.style.color = color || "#73dc73";
+            } else if (status === "STOPPING_PROFIT") {
+                badge.textContent = text || "TAKING PROFIT (> $0.50)";
+                badge.style.background = bg || "#3d2812";
+                badge.style.color = color || "#ffd166";
+            } else if (status === "WAITING_FUNDING") {
+                badge.textContent = text || "WAITING FOR SETTLEMENT";
+                badge.style.background = bg || "#19283d";
+                badge.style.color = color || "#64b5f6";
+            } else if (status === "RESTARTING") {
+                badge.textContent = text || "RE-LAUNCHING BOTS";
+                badge.style.background = bg || "#251d38";
+                badge.style.color = color || "#b388ff";
+            }
+
+            syncAutotraderStateToBackend();
+        }
+
+        /**
+         * Query Funding Account USDT Balance from backend
+         */
+        async function fetchFundingBalance() {
+            const display = document.getElementById("autoTraderFundingBalanceDisplay");
+            try {
+                const res = await fetch("/api/account/funding-balance");
+                const data = await res.json();
+                if (data.success) {
+                    const bal = parseFloat(data.transferBalance !== undefined ? data.transferBalance : data.walletBalance) || 0;
+                    currentFundingBalance = bal;
+                    if (display) {
+                        display.textContent = `$${bal.toFixed(4)}`;
+                    }
+                    return bal;
+                }
+            } catch (err) {
+                console.warn("Could not fetch funding balance:", err);
+            }
+            return currentFundingBalance;
+        }
+
+        /**
+         * Switch between Manual Scanner page and Autotrader page
+         */
+        function switchAppTab(tab) {
+            activeAppTab = tab;
+            const btnManual = document.getElementById("tabBtnManual");
+            const btnAutotrader = document.getElementById("tabBtnAutotrader");
+            const pageManual = document.getElementById("tabMainPage");
+            const pageAutotrader = document.getElementById("tabAutotraderPage");
+
+            if (tab === "manual") {
+                if (btnManual) btnManual.classList.add("active");
+                if (btnAutotrader) btnAutotrader.classList.remove("active");
+                if (pageManual) pageManual.style.display = "block";
+                if (pageAutotrader) pageAutotrader.style.display = "none";
+                if (selectedResult) {
+                    setTimeout(() => renderSymbolChart(selectedResult), 50);
+                }
+            } else {
+                if (btnAutotrader) btnAutotrader.classList.add("active");
+                if (btnManual) btnManual.classList.remove("active");
+                if (pageManual) pageManual.style.display = "none";
+                pageAutotrader.style.display = "block";
+
+                // Ensure at least one symbol input row exists
+                const list = document.getElementById("autoTraderSymbolInputsList");
+                if (list && list.children.length === 0) {
+                    addAutoTraderSymbolRow();
+                }
+                // Update PnL stats & funding balance immediately
+                fetchActiveBots();
+                fetchFundingBalance();
+
+                // Connect WebSocket for any active symbols
+                syncAutoTraderWsSubscriptions();
+            }
+        }
+
+        /**
+         * Select Bot Investment (50, 100, 250 USDT)
+         */
+        function selectAutoTraderInvestment(amount) {
+            if (autoTraderRunning) {
+                addLog("Cannot change investment preset while Autotrader is running. Please stop it first.", "warning");
+                return;
+            }
+            autoTraderInvestment = Number(amount);
+            [50, 100, 250].forEach(val => {
+                const box = document.getElementById(`invBox${val}`);
+                if (box) {
+                    box.classList.toggle("selected", val === autoTraderInvestment);
+                }
+            });
+
+            const display = document.getElementById("autoTraderSelectedInvestmentDisplay");
+            if (display) {
+                display.textContent = `$${autoTraderInvestment}`;
+            }
+
+            // Update row previews
+            updateAllSymbolRowDisplays();
+            addLog(`Autotrader bot investment preset set to $${autoTraderInvestment} USDT`, "info");
+        }
+
+        /**
+         * Get the list of all selected and valid symbols from input rows
+         */
+        function getActiveAutoTraderSymbols() {
+            const symbolsList = [];
+            const inputs = document.querySelectorAll("#autoTraderSymbolInputsList .symbol-search-input");
+            inputs.forEach(inp => {
+                const val = (inp.dataset.selectedSymbol || inp.value || "").trim().toUpperCase();
+                if (val && !symbolsList.includes(val)) {
+                    symbolsList.push(val);
+                }
+            });
+            return symbolsList;
+        }
+
+        /**
+         * Connect or ensure live public Bybit WebSocket for Autotrader
+         * Includes ping/pong keepalive every 20s and automatic reconnect on drop
+         */
+        function ensureAutoTraderWsConnection() {
+            if (autoTraderWs && (autoTraderWs.readyState === WebSocket.OPEN || autoTraderWs.readyState === WebSocket.CONNECTING)) {
+                return;
+            }
+
+            try {
+                autoTraderWs = new WebSocket("wss://stream.bybit.com/v5/public/linear");
+
+                autoTraderWs.onopen = () => {
+                    // Start Ping-Pong keepalive every 20 seconds
+                    if (autoTraderWsPingTimer) clearInterval(autoTraderWsPingTimer);
+                    autoTraderWsPingTimer = setInterval(() => {
+                        if (autoTraderWs && autoTraderWs.readyState === WebSocket.OPEN) {
+                            try {
+                                autoTraderWs.send(JSON.stringify({ op: "ping" }));
+                            } catch (e) {}
+                        }
+                    }, 20000);
+
+                    // Resubscribe to all required active symbols
+                    autoTraderWsSubscribedSymbols.clear();
+                    syncAutoTraderWsSubscriptions();
+                };
+
+                autoTraderWs.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.ret_msg === "pong" || msg.op === "pong") return;
+
+                        if (msg.topic && msg.topic.startsWith("tickers.") && msg.data) {
+                            const symbol = msg.topic.replace("tickers.", "");
+                            const tickData = msg.data;
+                            const price = Number(tickData.lastPrice);
+                            if (Number.isFinite(price) && price > 0) {
+                                handleAutoTraderTickerUpdate(symbol, price);
+                            }
+                        }
+                    } catch (err) {
+                        // ignore malformed packets
+                    }
+                };
+
+                autoTraderWs.onerror = () => {
+                    // Will trigger onclose and attempt reconnect
+                };
+
+                autoTraderWs.onclose = () => {
+                    if (autoTraderWsPingTimer) clearInterval(autoTraderWsPingTimer);
+                    autoTraderWs = null;
+                    // Auto-reconnect after 3 seconds if Autotrader is active or tab is visible
+                    if (autoTraderWsReconnectTimer) clearTimeout(autoTraderWsReconnectTimer);
+                    autoTraderWsReconnectTimer = setTimeout(() => {
+                        const active = getActiveAutoTraderSymbols();
+                        if (active.length > 0 || autoTraderRunning) {
+                            ensureAutoTraderWsConnection();
+                        }
+                    }, 3000);
+                };
+            } catch (e) {
+                console.warn("Failed to create AutoTrader WebSocket:", e);
+            }
+        }
+
+        /**
+         * Subscribe or unsubscribe topics to match current list of selected symbols
+         */
+        function syncAutoTraderWsSubscriptions() {
+            const activeSymbols = getActiveAutoTraderSymbols();
+            if (activeSymbols.length === 0) return;
+
+            ensureAutoTraderWsConnection();
+
+            if (!autoTraderWs || autoTraderWs.readyState !== WebSocket.OPEN) return;
+
+            const neededSymbols = new Set(activeSymbols);
+
+            // Subscribe to missing
+            for (const sym of neededSymbols) {
+                if (!autoTraderWsSubscribedSymbols.has(sym)) {
+                    autoTraderWs.send(JSON.stringify({
+                        op: "subscribe",
+                        args: [`tickers.${sym}`]
+                    }));
+                    autoTraderWsSubscribedSymbols.add(sym);
+                }
+            }
+
+            // Unsubscribe from removed
+            for (const sym of autoTraderWsSubscribedSymbols) {
+                if (!neededSymbols.has(sym)) {
+                    autoTraderWs.send(JSON.stringify({
+                        op: "unsubscribe",
+                        args: [`tickers.${sym}`]
+                    }));
+                    autoTraderWsSubscribedSymbols.delete(sym);
+                }
+            }
+        }
+
+        /**
+         * Get tick size for symbol
+         */
+        function getSymbolTickSize(symbol) {
+            if (instrumentMap && instrumentMap[symbol] && instrumentMap[symbol].tickSize) {
+                return Number(instrumentMap[symbol].tickSize) || 0.00000001;
+            }
+            return 0.00000001;
+        }
+
+        /**
+         * Handle incoming live price for a symbol
+         * Calculates 50% lower, 100% upper grid prices, 25% stop loss with 360 grids
+         */
+        function handleAutoTraderTickerUpdate(symbol, livePrice) {
+            const tickSize = getSymbolTickSize(symbol);
+            const lowerPrice = snapToTick(livePrice * 0.50, tickSize);
+            const upperPrice = snapToTick(livePrice * 2.00, tickSize);
+            const stopLossPrice = snapToTick(livePrice * 0.75, tickSize);
+
+            autoTraderTickerData[symbol] = {
+                price: livePrice,
+                tickSize,
+                lower: lowerPrice,
+                upper: upperPrice,
+                stopLoss: stopLossPrice,
+                lastUpdate: Date.now()
+            };
+
+            // Update row UI for this symbol
+            updateSymbolRowDisplay(symbol);
+        }
+
+        /**
+         * Update UI row for a symbol with live price, Lower (-50%), Upper (+50%), and 200 Grids
+         */
+        function updateSymbolRowDisplay(symbol) {
+            const inputs = document.querySelectorAll("#autoTraderSymbolInputsList .symbol-search-input");
+            inputs.forEach(inp => {
+                const sym = (inp.dataset.selectedSymbol || "").toUpperCase();
+                if (sym === symbol) {
+                    const row = inp.closest(".symbol-input-row");
+                    if (!row) return;
+                    const preview = row.querySelector(".symbol-live-grid-display");
+                    if (!preview) return;
+
+                    const data = autoTraderTickerData[symbol];
+                    if (!data) return;
+
+                    const fmtPrice = formatBybitPrice(data.price, data.tickSize);
+                    const fmtLower = formatBybitPrice(data.lower, data.tickSize);
+                    const fmtUpper = formatBybitPrice(data.upper, data.tickSize);
+                    const fmtStopLoss = data.stopLoss ? formatBybitPrice(data.stopLoss, data.tickSize) : null;
+
+                    preview.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #73dc73; box-shadow: 0 0 6px #73dc73;"></span>
+                            <span style="color: #fff; font-weight: bold; font-size: 12px;">$${fmtPrice}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                            <span style="color: #ef5350;">
+                                Lower (-50%): <strong style="color: #fff;">${fmtLower}</strong>
+                            </span>
+                            <span style="color: #26a69a;">
+                                Upper (+100%): <strong style="color: #fff;">${fmtUpper}</strong>
+                            </span>
+                            <span style="color: #ef5350;">
+                                Stop Loss (-25%): <strong style="color: #fff;">${fmtStopLoss ? fmtStopLoss : '25%'}</strong>
+                            </span>
+                            <span style="color: #ffd166; background: #2b2311; padding: 2px 7px; border-radius: 4px; font-weight: bold;">
+                                360 Grids
+                            </span>
+                            <span style="color: #ffb13b; background: #291d0e; padding: 2px 7px; border-radius: 4px; font-weight: bold;">
+                                $${autoTraderInvestment} USDT
+                            </span>
+                        </div>
+                    `;
+                    preview.style.display = "flex";
+                }
+            });
+        }
+
+        /**
+         * Update all symbol row displays
+         */
+        function updateAllSymbolRowDisplays() {
+            const activeSymbols = getActiveAutoTraderSymbols();
+            activeSymbols.forEach(sym => {
+                if (autoTraderTickerData[sym]) {
+                    updateSymbolRowDisplay(sym);
+                }
+            });
+        }
+
+        /**
+         * Fetch all available Bybit linear USDT symbols for autocomplete
+         */
+        async function getAvailableSymbolsForAutocomplete() {
+            if (symbols && symbols.length > 0) {
+                return symbols;
+            }
+            if (instrumentMap && Object.keys(instrumentMap).length > 0) {
+                return Object.keys(instrumentMap);
+            }
+            try {
+                return await getSymbols();
+            } catch (e) {
+                return ["BTCUSDT", "ETHUSDT", "SOLUSDT", "1000BONKUSDT", "DOGEUSDT", "XRPUSDT", "PEPEUSDT", "SUIUSDT", "NEARUSDT"];
+            }
+        }
+
+        /**
+         * Add a new symbol input row with live autocomplete and live grid preview
+         */
+        function addAutoTraderSymbolRow(initialSymbol = "") {
+            const list = document.getElementById("autoTraderSymbolInputsList");
+            if (!list) return;
+
+            const rowId = `symbolRow_${++symbolRowCounter}`;
+            const row = document.createElement("div");
+            row.className = "symbol-input-row";
+            row.id = rowId;
+
+            row.innerHTML = `
+                <div class="symbol-input-top-bar">
+                    <input type="text"
+                        class="symbol-search-input ${initialSymbol ? 'locked' : ''}"
+                        placeholder="Search pair (e.g. bonk, btc, sol, eth)..."
+                        value="${initialSymbol}"
+                        data-selected-symbol="${initialSymbol}"
+                        autocomplete="off"
+                        spellcheck="false"
+                    />
+                    <button type="button" class="symbol-remove-btn" title="Remove symbol" onclick="removeAutoTraderSymbolRow('${rowId}')">✕</button>
+                </div>
+                <div class="symbol-live-grid-display" style="display: none;"></div>
+                <div class="symbol-autocomplete-dropdown" style="display: none;"></div>
+            `;
+
+            list.appendChild(row);
+
+            const input = row.querySelector(".symbol-search-input");
+            const dropdown = row.querySelector(".symbol-autocomplete-dropdown");
+
+            setupSymbolAutocomplete(input, dropdown, rowId);
+
+            if (initialSymbol) {
+                syncAutoTraderWsSubscriptions();
+            }
+        }
+
+        /**
+         * Remove a symbol input row
+         */
+        function removeAutoTraderSymbolRow(rowId) {
+            const row = document.getElementById(rowId);
+            const list = document.getElementById("autoTraderSymbolInputsList");
+            if (!row || !list) return;
+
+            const inp = row.querySelector(".symbol-search-input");
+            const sym = inp ? (inp.dataset.selectedSymbol || "").toUpperCase() : "";
+
+            if (row._outsideClickHandler) {
+                document.removeEventListener("click", row._outsideClickHandler);
+            }
+
+            row.remove();
+
+            if (sym && !getActiveAutoTraderSymbols().includes(sym)) {
+                if (autoTraderWs && autoTraderWs.readyState === WebSocket.OPEN && autoTraderWsSubscribedSymbols.has(sym)) {
+                    autoTraderWs.send(JSON.stringify({
+                        op: "unsubscribe",
+                        args: [`tickers.${sym}`]
+                    }));
+                    autoTraderWsSubscribedSymbols.delete(sym);
+                }
+                delete autoTraderTickerData[sym];
+            }
+
+            // Always ensure at least one input row exists
+            if (list.children.length === 0) {
+                addAutoTraderSymbolRow();
+            }
+        }
+
+        /**
+         * Setup smart autocomplete narrowing logic on a symbol input
+         */
+        function setupSymbolAutocomplete(input, dropdown, rowId) {
+            let activeIndex = -1;
+
+            async function updateDropdown() {
+                const query = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+                if (!query) {
+                    dropdown.style.display = "none";
+                    dropdown.innerHTML = "";
+                    input.dataset.selectedSymbol = "";
+                    input.classList.remove("locked");
+                    const row = document.getElementById(rowId);
+                    if (row) {
+                        const preview = row.querySelector(".symbol-live-grid-display");
+                        if (preview) preview.style.display = "none";
+                    }
+                    syncAutoTraderWsSubscriptions();
+                    return;
+                }
+
+                const allSymbols = await getAvailableSymbolsForAutocomplete();
+
+                // Smart ranking:
+                // 1. Exact match
+                // 2. Starts with query (or after common multipliers like 1000)
+                // 3. Contains query
+                const matches = allSymbols.filter(s => {
+                    const clean = s.toUpperCase();
+                    return clean.includes(query);
+                }).sort((a, b) => {
+                    const aClean = a.toUpperCase();
+                    const bClean = b.toUpperCase();
+                    if (aClean === query + "USDT") return -1;
+                    if (bClean === query + "USDT") return 1;
+                    if (aClean === query) return -1;
+                    if (bClean === query) return 1;
+
+                    // Match e.g. "BONK" inside "1000BONKUSDT"
+                    const aBonk = aClean.replace(/^1000|^10000|^1000000/, "").startsWith(query);
+                    const bBonk = bClean.replace(/^1000|^10000|^1000000/, "").startsWith(query);
+                    if (aBonk && !bBonk) return -1;
+                    if (!aBonk && bBonk) return 1;
+
+                    const aStarts = aClean.startsWith(query);
+                    const bStarts = bClean.startsWith(query);
+                    if (aStarts && !bStarts) return -1;
+                    if (!aStarts && bStarts) return 1;
+
+                    return aClean.localeCompare(bClean);
+                }).slice(0, 12); // top 12 matches
+
+                if (matches.length === 0) {
+                    dropdown.innerHTML = `<div style="padding: 10px 14px; font-size: 12px; color: #888;">No matching symbols found</div>`;
+                    dropdown.style.display = "block";
+                    return;
+                }
+
+                dropdown.innerHTML = "";
+                activeIndex = -1;
+
+                matches.forEach((sym) => {
+                    const item = document.createElement("div");
+                    item.className = "symbol-autocomplete-item";
+                    item.innerHTML = `
+                        <span style="font-weight: bold;">${sym}</span>
+                        <span style="color: #888; font-size: 11px;">Linear USDT</span>
+                    `;
+                    item.onclick = () => selectSymbol(sym);
+                    dropdown.appendChild(item);
+                });
+
+                dropdown.style.display = "block";
+            }
+
+            function selectSymbol(sym) {
+                input.value = sym;
+                input.dataset.selectedSymbol = sym;
+                input.classList.add("locked");
+                dropdown.style.display = "none";
+                dropdown.innerHTML = "";
+
+                addLog(`Autotrader selected symbol: ${sym}`, "ok");
+
+                // Immediately sync WebSocket subscription for live price ticker
+                syncAutoTraderWsSubscriptions();
+
+                // If ticker data is already available, show preview right away
+                if (autoTraderTickerData[sym]) {
+                    updateSymbolRowDisplay(sym);
+                } else {
+                    const row = document.getElementById(rowId);
+                    if (row) {
+                        const preview = row.querySelector(".symbol-live-grid-display");
+                        if (preview) {
+                            preview.innerHTML = `<span style="color:#ffd166;">Connecting to live WebSocket ticker for ${sym}...</span>`;
+                            preview.style.display = "flex";
+                        }
+                    }
+                }
+
+                // Check if this is the last input in the list; if so, automatically create a new empty input row below
+                const list = document.getElementById("autoTraderSymbolInputsList");
+                if (list) {
+                    const allInputs = list.querySelectorAll(".symbol-search-input");
+                    const lastInput = allInputs[allInputs.length - 1];
+                    if (lastInput === input) {
+                        addAutoTraderSymbolRow();
+                    }
+                }
+            }
+
+            input.addEventListener("input", () => {
+                input.dataset.selectedSymbol = "";
+                input.classList.remove("locked");
+                updateDropdown();
+            });
+
+            input.addEventListener("focus", () => {
+                if (input.value.trim()) {
+                    updateDropdown();
+                }
+            });
+
+            input.addEventListener("keydown", (e) => {
+                const items = dropdown.querySelectorAll(".symbol-autocomplete-item");
+                if (dropdown.style.display !== "none" && items.length > 0) {
+                    if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        activeIndex = (activeIndex + 1) % items.length;
+                        items.forEach((it, i) => it.classList.toggle("highlighted", i === activeIndex));
+                        items[activeIndex].scrollIntoView({ block: "nearest" });
+                    } else if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        activeIndex = (activeIndex - 1 + items.length) % items.length;
+                        items.forEach((it, i) => it.classList.toggle("highlighted", i === activeIndex));
+                        items[activeIndex].scrollIntoView({ block: "nearest" });
+                    } else if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (activeIndex >= 0 && activeIndex < items.length) {
+                            items[activeIndex].click();
+                        } else if (items.length > 0) {
+                            items[0].click();
+                        }
+                    } else if (e.key === "Escape") {
+                        dropdown.style.display = "none";
+                    }
+                }
+            });
+
+            // Clean click-outside listener attached safely using rowId
+            const outsideClickHandler = (evt) => {
+                const targetRow = document.getElementById(rowId);
+                if (!targetRow || !targetRow.contains(evt.target)) {
+                    dropdown.style.display = "none";
+                }
+            };
+            document.addEventListener("click", outsideClickHandler);
+            const parentRow = document.getElementById(rowId);
+            if (parentRow) {
+                parentRow._outsideClickHandler = outsideClickHandler;
+            }
+        }
+
+        /**
+         * Launch Grid Bots for all selected symbols with live WebSocket ±50% prices, 200 grids, 5x leverage
+         */
+        async function launchBotsForSelectedSymbols() {
+            const activeSymbols = getActiveAutoTraderSymbols();
+            if (activeSymbols.length === 0) {
+                addLog("Autotrader: No valid symbols selected to launch.", "warning");
+                return false;
+            }
+
+            addLog(`🤖 Autotrader launching ${activeSymbols.length} bot(s) with $${autoTraderInvestment} USDT, 360 grids, SL: 25% each...`, "info");
+            let launchedCount = 0;
+
+            for (const sym of activeSymbols) {
+                let ticker = autoTraderTickerData[sym];
+
+                // If ticker not yet received from WS, attempt quick fallback fetch
+                if (!ticker || !ticker.price) {
+                    try {
+                        const markData = await apiRequest(`/v5/market/tickers?category=linear&symbol=${encodeURIComponent(sym)}`);
+                        const row = markData && markData.result && markData.result.list && markData.result.list[0];
+                        if (row && Number(row.lastPrice) > 0) {
+                            handleAutoTraderTickerUpdate(sym, Number(row.lastPrice));
+                            ticker = autoTraderTickerData[sym];
+                        }
+                    } catch (e) {}
+                }
+
+                if (!ticker || !ticker.price) {
+                    addLog(`Autotrader skipping ${sym}: Live price not yet received.`, "error");
+                    continue;
+                }
+
+                const tickSize = ticker.tickSize || getSymbolTickSize(sym);
+                const lowerPrice = snapToTick(ticker.price * 0.50, tickSize);
+                const upperPrice = snapToTick(ticker.price * 2.00, tickSize);
+                const stopLossPrice = snapToTick(ticker.price * 0.75, tickSize);
+                const gridCount = 360; // 360 grids
+                const leverage = 5;    // 5x leverage
+                const investment = autoTraderInvestment; // 50, 100, or 250 USDT
+
+                try {
+                    const response = await fetch("/api/bot/create", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            symbol: sym,
+                            lowerPrice,
+                            upperPrice,
+                            stopLossPrice,
+                            stopLossRatio: 0.25,
+                            gridCount,
+                            leverage,
+                            investment,
+                            currentPrice: ticker.price
+                        })
+                    });
+
+                    const res = await response.json();
+                    if (res.success) {
+                        launchedCount++;
+                        addLog(`✓ Autotrader created bot for ${sym}: Lower=${lowerPrice}, Upper=${upperPrice}, Grids=360, SL=25% (${stopLossPrice}), Inv=$${investment}`, "ok");
+                    } else {
+                        addLog(`✗ Failed to create bot for ${sym}: ${res.message}`, "error");
+                    }
+                } catch (err) {
+                    addLog(`✗ Error launching bot for ${sym}: ${err.message}`, "error");
+                }
+            }
+
+            await fetchActiveBots();
+            return launchedCount > 0;
+        }
+
+        /**
+         * Stop all active bots when PnL > 0.5 USDT
+         */
+        async function stopAllBotsForProfitTaking() {
+            try {
+                addLog(`💰 Stopping all bots to realize profit (> $0.50 USDT)...`, "ok");
+                const res = await fetch("/api/bot/stop-all", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await res.json();
+                addLog(`⏹ Stopped ${data.stoppedCount || 0} bot(s). Entering settlement check...`, "info");
+                await fetchActiveBots();
+                return true;
+            } catch (err) {
+                addLog(`Failed to stop bots: ${err.message}`, "error");
+                return false;
+            }
+        }
+
+        let isAutoTraderCycleRunning = false;
+
+        /**
+         * Autotrader Main Cycle (runs every 1 second)
+         * 1. If MONITORING: check bots total PnL. If total PnL > 0.5 USDT -> STOP bots -> switch to WAITING_FUNDING
+         * 2. If WAITING_FUNDING: poll funding balance every 1s. Once fundingBalance > initialFundingBalance:
+         *    update initialFundingBalance, re-launch bots with fresh ±50% prices from live WS ticker, switch to MONITORING
+         */
+        async function runAutoTraderCycleStep() {
+            if (!autoTraderRunning || isAutoTraderCycleRunning) return;
+            isAutoTraderCycleRunning = true;
+
+            try {
+                if (autoTraderStatus === "MONITORING") {
+                    // Check active bots PnL via /api/bot/list
+                    const res = await fetch("/api/bot/list");
+                    const data = await res.json();
+                    if (!data.success) return;
+
+                    const summary = data.summary || {};
+                    const totalPnl = Number(summary.totalPnl) || 0;
+                    const activeBotsCount = Number(summary.totalActiveBots) || 0;
+
+                    // Update UI PnL display
+                    const pnlElem = document.getElementById("autoTraderPnlValue");
+                    if (pnlElem) {
+                        pnlElem.textContent = (totalPnl >= 0 ? "+$" : "-$") + Math.abs(totalPnl).toFixed(2);
+                        pnlElem.style.color = totalPnl >= 0 ? "#73dc73" : "#ff6c6c";
+                    }
+
+                    // Update Earned Since Start display (includes current unrealized/realized bot PnL + settled balance gains)
+                    updateAutoTraderEarnedDisplay(totalPnl);
+
+                    // Condition: PnL is greater than 0.5 USDT and there are active bots running
+                    if (activeBotsCount > 0 && totalPnl > 0.5) {
+                        addLog(`🎯 PnL is $${totalPnl.toFixed(4)} USDT (> $0.50). Triggering profit stop and recycle!`, "ok");
+                        updateAutoTraderStatus("STOPPING_PROFIT", `TAKING PROFIT (+$${totalPnl.toFixed(2)})`);
+
+                        // 1. Stop bot or bots
+                        await stopAllBotsForProfitTaking();
+
+                        // 2. Move to settlement check state
+                        updateAutoTraderStatus("WAITING_FUNDING", `WAITING SETTLEMENT (> $${initialFundingBalance.toFixed(4)})`);
+                    }
+
+                } else if (autoTraderStatus === "WAITING_FUNDING") {
+                    // Check every 1 second if funding account is bigger than it was before start autotrader was clicked
+                    const balance = await fetchFundingBalance();
+
+                    // Update Earned Since Start display during settlement wait
+                    updateAutoTraderEarnedDisplay(0);
+
+                    if (balance !== null && initialFundingBalance !== null && balance > initialFundingBalance) {
+                        const profitDiff = (balance - initialFundingBalance).toFixed(4);
+                        autoTraderRealizedProfitTotal += (balance - initialFundingBalance);
+                        updateAutoTraderEarnedDisplay(0);
+
+                        addLog(`🎉 Funding Account increased! Previous: $${initialFundingBalance.toFixed(4)} USDT &rarr; Current: $${balance.toFixed(4)} USDT (+${profitDiff} USDT).`, "ok");
+
+                        // Update initialFundingBalance to the new higher balance
+                        initialFundingBalance = balance;
+                        updateAutoTraderStatus("RESTARTING", "RE-LAUNCHING BOTS");
+
+                        // Re-launch bot or bots with fresh -50%/+100% grid prices from live WebSocket ticker, 360 grids, SL 25%
+                        addLog(`🚀 Re-launching bots with fresh grid parameters (-50%/+100%, 360 grids, SL: 25%, $${autoTraderInvestment} USDT)...`, "ok");
+                        const launched = await launchBotsForSelectedSymbols();
+
+                        if (launched) {
+                            updateAutoTraderStatus("MONITORING", "MONITORING PnL");
+                        } else {
+                            addLog("Could not re-launch bots immediately; will retry on next cycle step.", "warning");
+                        }
+                    }
+                }
+            } catch (cycleErr) {
+                console.warn("Autotrader cycle step error:", cycleErr);
+            } finally {
+                isAutoTraderCycleRunning = false;
+            }
+        }
+
+        /**
+         * Start Autotrader button handler
+         * 1. Validates selected symbols
+         * 2. Queries & records Funding Account USDT balance before starting
+         * 3. Creates bot or bots with selected investment (50, 100, 250), -50%/+100% grids, 360 grids, SL 25%
+         * 4. Starts 1-second monitoring loop
+         */
+        async function startAutotrader() {
+            const activeSymbols = getActiveAutoTraderSymbols();
+            if (activeSymbols.length === 0) {
+                alert("Please select at least one symbol to autotrade by typing in the search box.");
+                return;
+            }
+
+            const btnStart = document.getElementById("btnStartAutotrader");
+            const btnStop = document.getElementById("btnStopAutotrader");
+
+            if (btnStart) {
+                btnStart.disabled = true;
+                btnStart.textContent = "⌛ Initializing...";
+            }
+
+            // Step 1: Query & store available USDT in Funding Account before starting
+            addLog(`🔍 Fetching initial Funding Account USDT balance...`, "info");
+            const fundingBal = await fetchFundingBalance();
+            if (fundingBal === null || fundingBal === undefined) {
+                addLog("Warning: Could not retrieve funding balance, using 0 as reference.", "warning");
+                initialFundingBalance = 0;
+                autoTraderSessionStartFundingBalance = 0;
+            } else {
+                initialFundingBalance = fundingBal;
+                autoTraderSessionStartFundingBalance = fundingBal;
+                addLog(`🔒 Recorded Initial Funding Account Balance: $${initialFundingBalance.toFixed(4)} USDT`, "ok");
+            }
+
+            // Reset session accumulated profits and display
+            autoTraderRealizedProfitTotal = 0;
+            updateAutoTraderEarnedDisplay(0);
+
+            // Step 2: Set running flag and UI status
+            autoTraderRunning = true;
+            if (btnStart) {
+                btnStart.disabled = false;
+                btnStart.style.opacity = "0.6";
+                btnStart.textContent = "● Autotrader Active";
+            }
+            if (btnStop) {
+                btnStop.style.opacity = "1";
+            }
+
+            updateAutoTraderStatus("MONITORING", "STARTING BOTS");
+
+            // Step 3: Launch bot or bots for selected symbols
+            const launched = await launchBotsForSelectedSymbols();
+            if (!launched) {
+                addLog("Autotrader launched with pending bot creations as prices stream in.", "info");
+            }
+
+            updateAutoTraderStatus("MONITORING", "MONITORING PnL");
+
+            // Step 4: Start 1-second monitoring & recycle loop
+            if (autoTraderCycleInterval) clearInterval(autoTraderCycleInterval);
+            autoTraderCycleInterval = setInterval(runAutoTraderCycleStep, 1000);
+
+            addLog(`▶ Autotrader STARTED for [${activeSymbols.join(", ")}]. Investment: $${autoTraderInvestment} USDT, 360 Grids, SL: 25%. Take profit target: > $0.50 USDT.`, "ok");
+        }
+
+        /**
+         * Stop Autotrader button handler (stops monitoring and closes all bots)
+         */
+        async function stopAutotrader() {
+            autoTraderRunning = false;
+            if (autoTraderCycleInterval) {
+                clearInterval(autoTraderCycleInterval);
+                autoTraderCycleInterval = null;
+            }
+
+            updateAutoTraderStatus("IDLE", "STOPPING BOTS");
+
+            const btnStart = document.getElementById("btnStartAutotrader");
+            const btnStop = document.getElementById("btnStopAutotrader");
+
+            if (btnStop) {
+                btnStop.disabled = true;
+                btnStop.textContent = "⏳ Stopping Bots...";
+            }
+
+            addLog("⏹ Stopping Autotrader and closing all active bots...", "warning");
+
+            try {
+                const res = await fetch("/api/bot/stop-all", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    addLog(`🛑 Autotrader stopped all bots: ${data.message || 'All bots stopped.'}`, "ok");
+                } else {
+                    addLog(`⚠️ Notice stopping bots: ${data.message}`, "warning");
+                }
+            } catch (err) {
+                addLog(`❌ Error stopping bots via Autotrader: ${err.message}`, "error");
+            } finally {
+                if (btnStop) {
+                    btnStop.disabled = false;
+                    btnStop.style.opacity = "0.7";
+                    btnStop.textContent = "⏹ Stop Autotrader";
+                }
+                if (btnStart) {
+                    btnStart.disabled = false;
+                    btnStart.style.opacity = "1";
+                    btnStart.textContent = "▶ Start Autotrader";
+                }
+                updateAutoTraderStatus("IDLE", "IDLE");
+                await fetchActiveBots();
+            }
+
+            // Sync stopped status to database
+            syncAutotraderStateToBackend();
+
+            addLog("⏹ Autotrader STOPPED. All bots closed and monitoring paused.", "warning");
+        }
+
+        /**
+         * Restore Autotrader State on Startup / Server Restart from MongoDB / Persistent Storage
+         */
+        async function restoreAutotraderStateFromBackend() {
+            try {
+                const res = await fetch("/api/autotrader/state");
+                const data = await res.json();
+                if (!data.success || !data.state) return;
+
+                const saved = data.state;
+                if (!saved.running && (!saved.symbols || saved.symbols.length === 0)) return;
+
+                addLog(`🔄 Found persistent Autotrader state from database (Active: ${saved.running}). Restoring session...`, "info");
+
+                // Restore investment preset
+                if (saved.investment && [50, 100, 250].includes(Number(saved.investment))) {
+                    selectAutoTraderInvestment(Number(saved.investment));
+                }
+
+                // Restore symbols
+                if (Array.isArray(saved.symbols) && saved.symbols.length > 0) {
+                    const list = document.getElementById("autoTraderSymbolInputsList");
+                    if (list) list.innerHTML = "";
+                    saved.symbols.forEach(sym => {
+                        addAutoTraderSymbolRow(sym);
+                    });
+                    // Add extra row for convenience
+                    addAutoTraderSymbolRow("");
+                }
+
+                // Restore funding baseline balances & realized profit total
+                if (saved.initialFundingBalance !== null && saved.initialFundingBalance !== undefined) {
+                    initialFundingBalance = Number(saved.initialFundingBalance);
+                }
+                if (saved.sessionStartFundingBalance !== null && saved.sessionStartFundingBalance !== undefined) {
+                    autoTraderSessionStartFundingBalance = Number(saved.sessionStartFundingBalance);
+                }
+                if (saved.realizedProfitTotal !== null && saved.realizedProfitTotal !== undefined) {
+                    autoTraderRealizedProfitTotal = Number(saved.realizedProfitTotal);
+                }
+
+                updateAutoTraderEarnedDisplay(0);
+
+                // If Autotrader was actively running when server stopped/restarted, resume loop automatically
+                if (saved.running) {
+                    autoTraderRunning = true;
+                    autoTraderStatus = saved.status || "MONITORING";
+
+                    const btnStart = document.getElementById("btnStartAutotrader");
+                    const btnStop = document.getElementById("btnStopAutotrader");
+
+                    if (btnStart) {
+                        btnStart.disabled = false;
+                        btnStart.style.opacity = "0.6";
+                        btnStart.textContent = "● Autotrader Active";
+                    }
+                    if (btnStop) {
+                        btnStop.style.opacity = "1";
+                    }
+
+                    updateAutoTraderStatus(autoTraderStatus);
+
+                    if (autoTraderCycleInterval) clearInterval(autoTraderCycleInterval);
+                    autoTraderCycleInterval = setInterval(runAutoTraderCycleStep, 1000);
+
+                    addLog(`⚡ Automatically RESUMED Autotrader after server restart for: ${saved.symbols.join(", ")} (Baseline: $${(initialFundingBalance || 0).toFixed(4)} USDT)`, "ok");
+                }
+            } catch (err) {
+                console.warn("Could not restore Autotrader state:", err);
+            }
+        }
+
+        // Initialize first Autotrader symbol input row and funding balance on startup
+        setTimeout(async () => {
+            const list = document.getElementById("autoTraderSymbolInputsList");
+            if (list && list.children.length === 0) {
+                addAutoTraderSymbolRow();
+            }
+            await fetchFundingBalance();
+            await restoreAutotraderStateFromBackend();
+        }, 150);
 
     </script>
 
