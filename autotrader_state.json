@@ -1,0 +1,11 @@
+{
+  "running": false,
+  "status": "IDLE",
+  "investment": 100,
+  "symbols": [],
+  "initialFundingBalance": 236.7648,
+  "sessionStartFundingBalance": 236.7648,
+  "realizedProfitTotal": 0,
+  "startedAt": null,
+  "lastUpdate": 1789328776613
+}

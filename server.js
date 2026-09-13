@@ -22,13 +22,62 @@ app.use(express.json());
 
 const { MongoClient } = require("mongodb");
 
-// Persistent local storage file for tracking started bots (fallback if no MongoDB)
+// Persistent local storage files for tracking started bots and autotrader state (fallback if no MongoDB)
 const BOTS_STORAGE_FILE = path.join(__dirname, "active_bots.json");
+const AUTOTRADER_STORAGE_FILE = path.join(__dirname, "autotrader_state.json");
 
 // MongoDB Configuration (optional, e.g. Northflank MongoDB addon)
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URL || "";
 let mongoDb = null;
 let botsCollection = null;
+let autotraderCollection = null;
+
+// Autotrader In-Memory State
+let autotraderState = {
+    running: false,
+    status: "IDLE",
+    investment: 50,
+    symbols: [],
+    initialFundingBalance: null,
+    sessionStartFundingBalance: null,
+    realizedProfitTotal: 0,
+    startedAt: null,
+    lastUpdate: null
+};
+
+function loadStoredAutotraderState() {
+    try {
+        if (fs.existsSync(AUTOTRADER_STORAGE_FILE)) {
+            const data = fs.readFileSync(AUTOTRADER_STORAGE_FILE, "utf-8");
+            return JSON.parse(data);
+        }
+    } catch (e) {
+        console.error("Error reading stored autotrader state:", e);
+    }
+    return autotraderState;
+}
+
+async function saveStoredAutotraderState(state) {
+    autotraderState = { ...autotraderState, ...state, lastUpdate: Date.now() };
+
+    try {
+        fs.writeFileSync(AUTOTRADER_STORAGE_FILE, JSON.stringify(autotraderState, null, 2), "utf-8");
+    } catch (e) {
+        // Ignored in read-only environments
+    }
+
+    if (autotraderCollection) {
+        try {
+            await autotraderCollection.updateOne(
+                { _id: "current_autotrader_state" },
+                { $set: autotraderState },
+                { upsert: true }
+            );
+        } catch (dbErr) {
+            console.warn(`[MONGODB] Error saving autotrader state:`, dbErr.message);
+        }
+    }
+}
 
 async function initMongo() {
     if (!MONGO_URI) {
@@ -40,6 +89,7 @@ async function initMongo() {
         await client.connect();
         mongoDb = client.db(process.env.MONGO_DB_NAME || "gridmaker");
         botsCollection = mongoDb.collection("bots");
+        autotraderCollection = mongoDb.collection("autotrader");
         console.log(`🍃 [MONGODB] Connected successfully to MongoDB! Persistent storage active.`);
 
         // Sync stored bots from MongoDB into memory
@@ -50,6 +100,14 @@ async function initMongo() {
                 return bot;
             });
             console.log(`🍃 [MONGODB] Loaded ${activeBots.length} bots from MongoDB.`);
+        }
+
+        // Sync autotrader state from MongoDB
+        const atDoc = await autotraderCollection.findOne({ _id: "current_autotrader_state" });
+        if (atDoc) {
+            const { _id, ...savedState } = atDoc;
+            autotraderState = { ...autotraderState, ...savedState };
+            console.log(`🍃 [MONGODB] Loaded persistent Autotrader state (Running: ${autotraderState.running}, Symbols: ${autotraderState.symbols.join(",") || "none"}).`);
         }
     } catch (err) {
         console.warn(`⚠️ [MONGODB] Failed to connect to MongoDB: ${err.message}. Falling back to file storage.`);
@@ -91,6 +149,8 @@ async function saveStoredBots(bots) {
 }
 
 let activeBots = loadStoredBots();
+let autotraderStateLoaded = loadStoredAutotraderState();
+autotraderState = { ...autotraderState, ...autotraderStateLoaded };
 initMongo().catch(console.error);
 
 // -------------------------------------------------------------
@@ -128,7 +188,7 @@ async function syncServerTime() {
 function getBybitTimestamp() {
     // Re-sync if older than 5 minutes
     if (Date.now() - lastSyncTime > 5 * 60 * 1000) {
-        syncServerTime().catch(() => {});
+        syncServerTime().catch(() => { });
     }
     return String(Date.now() + serverTimeOffset);
 }
@@ -221,6 +281,8 @@ app.post("/api/bot/create", async (req, res) => {
             symbol,
             lowerPrice,
             upperPrice,
+            stopLossPrice,
+            stopLossRatio,
             gridCount,
             leverage = 10,
             investment = 50,
@@ -239,6 +301,8 @@ app.post("/api/bot/create", async (req, res) => {
         const grids = parseInt(gridCount, 10);
         const lower = Number(lowerPrice);
         const upper = Number(upperPrice);
+        const slPrice = stopLossPrice ? Number(stopLossPrice) : null;
+        const slRatio = stopLossRatio ? Number(stopLossRatio) : (slPrice ? null : 0.25);
 
         if (!BYBIT_API_KEY || !BYBIT_API_SECRET) {
             return res.status(400).json({
@@ -247,10 +311,13 @@ app.post("/api/bot/create", async (req, res) => {
             });
         }
 
-        console.log(`[BOT CREATE] Launching Neutral Grid Bot for ${symbol}: Lower=${lower}, Upper=${upper}, Grids=${grids}, Lev=${lev}x, Invest=${invAmount} USDT`);
+        console.log(`[BOT CREATE] Launching Neutral Grid Bot for ${symbol}: Lower=${lower}, Upper=${upper}, Grids=${grids}, Lev=${lev}x, Invest=${invAmount} USDT, SL Ratio=${slRatio}, SL Price=${slPrice}`);
 
         // Bybit V5 Futures Grid Bot payload:
         // direction: 3 (Neutral), grid_mode: 1 (Neutral), grid_type: 1 (Arithmetic)
+        // TP/SL documentation: https://bybit-exchange.github.io/docs/v5/bot/futures-grid/create
+        // tp_sl_type: 1 = Both TP and SL by percentage
+        // stop_loss_per: Stop-loss percentage value (e.g. "25" means 25%, "0.25" means 0.25%)
         const fgridPayload = {
             symbol: symbol,
             direction: 3,
@@ -262,6 +329,16 @@ app.post("/api/bot/create", async (req, res) => {
             grid_mode: 1,
             grid_type: 1
         };
+
+        if (slRatio) {
+            fgridPayload.tp_sl_type = 1;
+            // If passed as decimal ratio like 0.25, convert to whole percentage "25"
+            const slPercentValue = slRatio <= 1 ? (slRatio * 100) : slRatio;
+            fgridPayload.stop_loss_per = String(slPercentValue);
+        } else if (slPrice) {
+            fgridPayload.tp_sl_type = 2;
+            fgridPayload.stop_loss_price = String(slPrice);
+        }
 
         const result = await bybitSignedRequest("POST", "/v5/fgridbot/create", fgridPayload);
         const bybitData = result.data;
@@ -304,6 +381,8 @@ app.post("/api/bot/create", async (req, res) => {
             leverage: lev,
             lowerPrice: lower,
             upperPrice: upper,
+            stopLossRatio: slRatio,
+            stopLossPrice: slPrice,
             gridCount: grids,
             investment: invAmount,
             entryPrice: Number(liveDetail?.entry_price) || Number(currentPrice) || (lower + upper) / 2,
@@ -383,6 +462,15 @@ app.get("/api/bot/list", async (req, res) => {
                             bot.realizedPnl = Number(detail.realised_pnl) || 0;
                             bot.unrealizedPnl = Number(detail.unrealised_pnl) || 0;
                             bot.arbitrageNum = Number(detail.arbitrage_num) || 0;
+                            if (detail.stop_loss_per) {
+                                bot.stopLossRatio = Number(detail.stop_loss_per);
+                            }
+                            if (detail.stop_loss_price) {
+                                bot.stopLossPrice = Number(detail.stop_loss_price);
+                            }
+                            if (detail.tp_sl_type) {
+                                bot.tpSlType = detail.tp_sl_type;
+                            }
                             if (detail.create_time) {
                                 bot.startTime = Number(detail.create_time);
                             }
@@ -394,9 +482,14 @@ app.get("/api/bot/list", async (req, res) => {
             }
         }
 
+        // Cap stopped bots in memory & database to latest 30 to prevent unbounded memory growth over months of recycling
+        const runningList = activeBots.filter(b => b.status === "RUNNING");
+        const stoppedList = activeBots.filter(b => b.status === "STOPPED").slice(0, 30);
+        activeBots = [...runningList, ...stoppedList];
+
         saveStoredBots(activeBots);
 
-        const currentRunning = activeBots.filter(b => b.status === "RUNNING");
+        const currentRunning = runningList;
         const totalInvestment = currentRunning.reduce((sum, b) => sum + (Number(b.investment) || 0), 0);
         const totalPnl = currentRunning.reduce((sum, b) => sum + (Number(b.pnl) || 0), 0);
         const totalPnlPercent = totalInvestment > 0 ? (totalPnl / totalInvestment) * 100 : 0;
@@ -461,6 +554,51 @@ app.post("/api/bot/stop", async (req, res) => {
 });
 
 /**
+ * Query Funding Account USDT Balance
+ */
+app.get("/api/account/funding-balance", async (req, res) => {
+    try {
+        if (!BYBIT_API_KEY || !BYBIT_API_SECRET) {
+            return res.json({
+                success: true,
+                walletBalance: 0,
+                transferBalance: 0,
+                isMock: true,
+                message: "No API keys configured"
+            });
+        }
+
+        const queryParams = {
+            accountType: "FUND",
+            coin: "USDT"
+        };
+
+        const result = await bybitSignedRequest("GET", "/v5/asset/transfer/query-account-coin-balance", queryParams);
+
+        if (result.httpStatus === 200 && result.data && result.data.retCode === 0) {
+            const bal = (result.data.result && result.data.result.balance) || {};
+            const walletBalance = parseFloat(bal.walletBalance || bal.transferBalance || "0") || 0;
+            const transferBalance = parseFloat(bal.transferBalance || bal.walletBalance || "0") || 0;
+
+            return res.json({
+                success: true,
+                walletBalance,
+                transferBalance,
+                raw: bal
+            });
+        } else {
+            return res.status(500).json({
+                success: false,
+                message: result.data ? result.data.retMsg : "Failed to query funding balance",
+                raw: result.data
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
  * Stop All Active Grid Bots
  */
 app.post("/api/bot/stop-all", async (req, res) => {
@@ -493,6 +631,32 @@ app.post("/api/bot/stop-all", async (req, res) => {
             success: true,
             stoppedCount: runningBots.length,
             message: `All ${runningBots.length} active grid bots have been stopped on Bybit.`
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
+ * Get Persistent Autotrader State (from MongoDB / local storage)
+ */
+app.get("/api/autotrader/state", (req, res) => {
+    res.json({
+        success: true,
+        state: autotraderState
+    });
+});
+
+/**
+ * Save / Update Persistent Autotrader State (saves to MongoDB and file backup)
+ */
+app.post("/api/autotrader/state", async (req, res) => {
+    try {
+        const updateData = req.body || {};
+        await saveStoredAutotraderState(updateData);
+        res.json({
+            success: true,
+            state: autotraderState
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
