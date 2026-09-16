@@ -1121,7 +1121,7 @@
                         <div class="parameter">
                             <div class="parameter-label">Investment (USDT)</div>
                             <input class="parameter-input" id="botInvestmentInput" type="number" min="1" step="1"
-                                value="50" placeholder="50">
+                                value="100" placeholder="100">
                         </div>
 
                         <div class="parameter">
@@ -1201,6 +1201,7 @@
                 <div class="pnl-stat-card">
                     <div class="pnl-stat-label">Total PnL</div>
                     <div class="pnl-stat-value" id="totalPnlValue">$0.00</div>
+                    <div style="font-size: 10px; color: #79a1cc; margin-top: 2px;">Target: Auto-close @ &gt; $3.00</div>
                 </div>
 
                 <div class="pnl-stat-card">
@@ -1464,7 +1465,7 @@
                     <span id="modalBotLower" style="font-weight: bold;">—</span>
                 </div>
                 <div class="modal-row">
-                    <span style="color: #888;">Upper Grid Price (+100%):</span>
+                    <span style="color: #888;">Upper Grid Price (+50%):</span>
                     <span id="modalBotUpper" style="font-weight: bold;">—</span>
                 </div>
                 <div class="modal-row">
@@ -1481,7 +1482,7 @@
                 </div>
                 <div class="modal-row">
                     <span style="color: #888;">Investment Capital:</span>
-                    <span id="modalBotInvestment" style="font-weight: bold; color: #73dc73;">50 USDT</span>
+                    <span id="modalBotInvestment" style="font-weight: bold; color: #73dc73;">100 USDT</span>
                 </div>
             </div>
             <div class="modal-actions">
@@ -4750,12 +4751,12 @@
             if (tickSize) modalTickSize = tickSize;
 
             const botLower = snapToTick(currentPrice * 0.50, modalTickSize);
-            const botUpper = snapToTick(currentPrice * 2.00, modalTickSize);
+            const botUpper = snapToTick(currentPrice * 1.50, modalTickSize);
             const botStopLoss = snapToTick(currentPrice * 0.75, modalTickSize);
             const botLowerFormatted = formatBybitPrice(botLower, modalTickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, modalTickSize);
             const botStopLossFormatted = formatBybitPrice(botStopLoss, modalTickSize);
-            const botGrids = 360;
+            const botGrids = 200;
             const botLeverage = 5;
 
             // Arithmetic profit per grid estimate: ((upper/lower)^(1/grids) - 1) * 100
@@ -5457,7 +5458,7 @@
             const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
 
             const invInput = document.getElementById("botInvestmentInput");
-            const investmentVal = invInput ? (parseFloat(invInput.value) || 50) : 50;
+            const investmentVal = invInput ? (parseFloat(invInput.value) || 100) : 100;
 
             document.getElementById("modalBotSymbol").textContent = symbol;
             document.getElementById("modalBotInvestment").textContent = investmentVal.toFixed(2) + " USDT";
@@ -5484,24 +5485,24 @@
             const currentPrice = modalLatestPrice || selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
             const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
 
-            // Parameters for creation: 50% below, 100% above, 25% stop loss, 360 grids, 5x leverage
+            // Parameters for creation: 50% below, 50% above, 25% stop loss, 200 grids, 5x leverage
             const botLower = snapToTick(currentPrice * 0.50, tickSize);
-            const botUpper = snapToTick(currentPrice * 2.00, tickSize);
+            const botUpper = snapToTick(currentPrice * 1.50, tickSize);
             const botStopLoss = snapToTick(currentPrice * 0.75, tickSize);
             const botLowerFormatted = formatBybitPrice(botLower, tickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, tickSize);
             const botStopLossFormatted = formatBybitPrice(botStopLoss, tickSize);
-            const botGrids = 360;
+            const botGrids = 200;
             const botLeverage = 5;
 
             const invInput = document.getElementById("botInvestmentInput");
-            const investment = invInput ? (parseFloat(invInput.value) || 50) : 50;
+            const investment = invInput ? (parseFloat(invInput.value) || 100) : 100;
 
             const btnConfirm = document.getElementById("btnConfirmCreateBot");
             btnConfirm.disabled = true;
             btnConfirm.textContent = "Starting...";
 
-            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 360 grids, SL: 25%)...`, "info");
+            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids, SL: 25%)...`, "info");
 
             try {
                 const response = await fetch("/api/bot/create", {
@@ -5604,6 +5605,8 @@
             }
         }
 
+        let isManualAutoClosing = false;
+
         async function fetchActiveBots() {
             try {
                 // Read any known bot IDs from browser storage (in case server rebooted on ephemeral Northflank container)
@@ -5669,6 +5672,31 @@
                 // Sync Earned Since Start in Autotrader banner
                 if (typeof updateAutoTraderEarnedDisplay === "function") {
                     updateAutoTraderEarnedDisplay(Number(summary.totalPnl) || 0);
+                }
+
+                // Auto-close condition for manual bot webpage: if Total PnL is greater than 3 USDT, close all bots
+                const currentTotalPnl = Number(summary.totalPnl) || 0;
+                const currentActiveBots = Number(summary.totalActiveBots) || 0;
+                if (currentActiveBots > 0 && currentTotalPnl > 3 && !isManualAutoClosing) {
+                    isManualAutoClosing = true;
+                    addLog(`🎯 Take-Profit Target Hit: Total PnL ($${currentTotalPnl.toFixed(2)}) is greater than 3 USDT! Auto-closing all bots...`, "ok");
+                    try {
+                        const stopRes = await fetch("/api/bot/stop-all", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" }
+                        });
+                        const stopData = await stopRes.json();
+                        if (stopData.success) {
+                            addLog(`✅ Successfully auto-closed all bots: ${stopData.message || "All bots stopped"}`, "ok");
+                        } else {
+                            addLog(`⚠️ Auto-close stop-all warning: ${stopData.message || "Unknown result"}`, "warning");
+                        }
+                        await fetchActiveBots();
+                    } catch (closeErr) {
+                        addLog(`❌ Error during auto-closing all bots: ${closeErr.message}`, "error");
+                    } finally {
+                        setTimeout(() => { isManualAutoClosing = false; }, 6000);
+                    }
                 }
 
                 // Update Table
