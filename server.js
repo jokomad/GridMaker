@@ -301,8 +301,8 @@ app.post("/api/bot/create", async (req, res) => {
         const grids = parseInt(gridCount, 10);
         const lower = Number(lowerPrice);
         const upper = Number(upperPrice);
-        const slPrice = stopLossPrice ? Number(stopLossPrice) : null;
-        const slRatio = stopLossRatio ? Number(stopLossRatio) : (slPrice ? null : 0.25);
+        const slPrice = (stopLossPrice !== undefined && stopLossPrice !== null && stopLossPrice !== "" && Number(stopLossPrice) > 0) ? Number(stopLossPrice) : null;
+        const slRatio = (stopLossRatio !== undefined && stopLossRatio !== null && stopLossRatio !== "" && Number(stopLossRatio) > 0) ? Number(stopLossRatio) : null;
 
         if (!BYBIT_API_KEY || !BYBIT_API_SECRET) {
             return res.status(400).json({
@@ -311,7 +311,7 @@ app.post("/api/bot/create", async (req, res) => {
             });
         }
 
-        console.log(`[BOT CREATE] Launching Neutral Grid Bot for ${symbol}: Lower=${lower}, Upper=${upper}, Grids=${grids}, Lev=${lev}x, Invest=${invAmount} USDT, SL Ratio=${slRatio}, SL Price=${slPrice}`);
+        console.log(`[BOT CREATE] Launching Neutral Grid Bot for ${symbol}: Lower=${lower}, Upper=${upper}, Grids=${grids}, Lev=${lev}x, Invest=${invAmount} USDT, SL Ratio=${slRatio !== null ? slRatio : 'None'}, SL Price=${slPrice !== null ? slPrice : 'None'}`);
 
         // Bybit V5 Futures Grid Bot payload:
         // direction: 3 (Neutral), grid_mode: 1 (Neutral), grid_type: 1 (Arithmetic)
