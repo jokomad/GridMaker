@@ -1371,10 +1371,10 @@
                 <!-- 3. SYMBOL SELECTION WITH SMART AUTOCOMPLETE (NARROW DOWN) -->
                 <div>
                     <div style="font-size: 13px; font-weight: 600; color: #aab; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
-                        Symbols to Autotrade (Live WebSocket Ticker -50% / +100%, 360 Grids, SL 25%)
+                        Symbols to Autotrade (Live WebSocket Ticker -50% / +50%, 200 Grids)
                     </div>
                     <p style="color: #778; font-size: 12px; margin: 0 0 12px 0;">
-                        Type a symbol to select it (e.g. <strong style="color: #ffd166;">bonk</strong> &rarr; <strong style="color: #8ee88e;">1000BONKUSDT</strong>). Live WebSocket streams will calculate Lower (-50%), Upper (+100%), Stop Loss (-25%) with 360 grids. When PnL &gt; $0.50, bots are stopped and recreated once funding balance increases.
+                        Type a symbol to select it (e.g. <strong style="color: #ffd166;">bonk</strong> &rarr; <strong style="color: #8ee88e;">1000BONKUSDT</strong>). Live WebSocket streams will calculate Lower (-50%), Upper (+50%) with 200 grids. When PnL &gt; $0.50, bots are stopped and recreated once all bots stop and funding balance has enough USDT to start all bots.
                     </p>
 
                     <div class="symbol-inputs-container" id="autoTraderSymbolInputsList">
@@ -1467,10 +1467,6 @@
                 <div class="modal-row">
                     <span style="color: #888;">Upper Grid Price (+50%):</span>
                     <span id="modalBotUpper" style="font-weight: bold;">—</span>
-                </div>
-                <div class="modal-row">
-                    <span style="color: #888;">Stop Loss (-25%):</span>
-                    <span id="modalBotStopLoss" style="font-weight: bold; color: #ef5350;">—</span>
                 </div>
                 <div class="modal-row">
                     <span style="color: #888;">Number of Grids:</span>
@@ -4752,10 +4748,8 @@
 
             const botLower = snapToTick(currentPrice * 0.50, modalTickSize);
             const botUpper = snapToTick(currentPrice * 1.50, modalTickSize);
-            const botStopLoss = snapToTick(currentPrice * 0.75, modalTickSize);
             const botLowerFormatted = formatBybitPrice(botLower, modalTickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, modalTickSize);
-            const botStopLossFormatted = formatBybitPrice(botStopLoss, modalTickSize);
             const botGrids = 200;
             const botLeverage = 5;
 
@@ -4770,9 +4764,6 @@
 
             const upperElem = document.getElementById("modalBotUpper");
             if (upperElem) upperElem.textContent = botUpperFormatted;
-
-            const stopLossElem = document.getElementById("modalBotStopLoss");
-            if (stopLossElem) stopLossElem.textContent = `25% ($${botStopLossFormatted})`;
 
             const gridsElem = document.getElementById("modalBotGrids");
             if (gridsElem) gridsElem.textContent = botGrids;
@@ -5485,13 +5476,11 @@
             const currentPrice = modalLatestPrice || selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
             const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
 
-            // Parameters for creation: 50% below, 50% above, 25% stop loss, 200 grids, 5x leverage
+            // Parameters for creation: 50% below, 50% above, 200 grids, 5x leverage (no stop loss)
             const botLower = snapToTick(currentPrice * 0.50, tickSize);
             const botUpper = snapToTick(currentPrice * 1.50, tickSize);
-            const botStopLoss = snapToTick(currentPrice * 0.75, tickSize);
             const botLowerFormatted = formatBybitPrice(botLower, tickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, tickSize);
-            const botStopLossFormatted = formatBybitPrice(botStopLoss, tickSize);
             const botGrids = 200;
             const botLeverage = 5;
 
@@ -5502,7 +5491,7 @@
             btnConfirm.disabled = true;
             btnConfirm.textContent = "Starting...";
 
-            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids, SL: 25%)...`, "info");
+            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids)...`, "info");
 
             try {
                 const response = await fetch("/api/bot/create", {
@@ -5512,8 +5501,8 @@
                         symbol: symbol,
                         lowerPrice: botLowerFormatted,
                         upperPrice: botUpperFormatted,
-                        stopLossPrice: botStopLossFormatted,
-                        stopLossRatio: 0.25,
+                        stopLossPrice: null,
+                        stopLossRatio: null,
                         gridCount: botGrids,
                         leverage: botLeverage,
                         investment: investment,
@@ -6075,20 +6064,18 @@
 
         /**
          * Handle incoming live price for a symbol
-         * Calculates 50% lower, 100% upper grid prices, 25% stop loss with 360 grids
+         * Calculates 50% lower, 50% upper grid prices with 200 grids (no stop loss)
          */
         function handleAutoTraderTickerUpdate(symbol, livePrice) {
             const tickSize = getSymbolTickSize(symbol);
             const lowerPrice = snapToTick(livePrice * 0.50, tickSize);
-            const upperPrice = snapToTick(livePrice * 2.00, tickSize);
-            const stopLossPrice = snapToTick(livePrice * 0.75, tickSize);
+            const upperPrice = snapToTick(livePrice * 1.50, tickSize);
 
             autoTraderTickerData[symbol] = {
                 price: livePrice,
                 tickSize,
                 lower: lowerPrice,
                 upper: upperPrice,
-                stopLoss: stopLossPrice,
                 lastUpdate: Date.now()
             };
 
@@ -6115,7 +6102,6 @@
                     const fmtPrice = formatBybitPrice(data.price, data.tickSize);
                     const fmtLower = formatBybitPrice(data.lower, data.tickSize);
                     const fmtUpper = formatBybitPrice(data.upper, data.tickSize);
-                    const fmtStopLoss = data.stopLoss ? formatBybitPrice(data.stopLoss, data.tickSize) : null;
 
                     preview.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 6px;">
@@ -6127,13 +6113,10 @@
                                 Lower (-50%): <strong style="color: #fff;">${fmtLower}</strong>
                             </span>
                             <span style="color: #26a69a;">
-                                Upper (+100%): <strong style="color: #fff;">${fmtUpper}</strong>
-                            </span>
-                            <span style="color: #ef5350;">
-                                Stop Loss (-25%): <strong style="color: #fff;">${fmtStopLoss ? fmtStopLoss : '25%'}</strong>
+                                Upper (+50%): <strong style="color: #fff;">${fmtUpper}</strong>
                             </span>
                             <span style="color: #ffd166; background: #2b2311; padding: 2px 7px; border-radius: 4px; font-weight: bold;">
-                                360 Grids
+                                200 Grids
                             </span>
                             <span style="color: #ffb13b; background: #291d0e; padding: 2px 7px; border-radius: 4px; font-weight: bold;">
                                 $${autoTraderInvestment} USDT
@@ -6423,7 +6406,7 @@
                 return false;
             }
 
-            addLog(`🤖 Autotrader launching ${activeSymbols.length} bot(s) with $${autoTraderInvestment} USDT, 360 grids, SL: 25% each...`, "info");
+            addLog(`🤖 Autotrader launching ${activeSymbols.length} bot(s) with $${autoTraderInvestment} USDT, 200 grids each...`, "info");
             let launchedCount = 0;
 
             for (const sym of activeSymbols) {
@@ -6448,11 +6431,10 @@
 
                 const tickSize = ticker.tickSize || getSymbolTickSize(sym);
                 const lowerPrice = snapToTick(ticker.price * 0.50, tickSize);
-                const upperPrice = snapToTick(ticker.price * 2.00, tickSize);
-                const stopLossPrice = snapToTick(ticker.price * 0.75, tickSize);
-                const gridCount = 360; // 360 grids
+                const upperPrice = snapToTick(ticker.price * 1.50, tickSize);
+                const gridCount = 200; // 200 grids
                 const leverage = 5;    // 5x leverage
-                const investment = autoTraderInvestment; // 50, 100, or 250 USDT
+                const investment = autoTraderInvestment; // 100, 200, 300, 400, or 500 USDT
 
                 try {
                     const response = await fetch("/api/bot/create", {
@@ -6462,8 +6444,8 @@
                             symbol: sym,
                             lowerPrice,
                             upperPrice,
-                            stopLossPrice,
-                            stopLossRatio: 0.25,
+                            stopLossPrice: null,
+                            stopLossRatio: null,
                             gridCount,
                             leverage,
                             investment,
@@ -6474,7 +6456,7 @@
                     const res = await response.json();
                     if (res.success) {
                         launchedCount++;
-                        addLog(`✓ Autotrader created bot for ${sym}: Lower=${lowerPrice}, Upper=${upperPrice}, Grids=360, SL=25% (${stopLossPrice}), Inv=$${investment}`, "ok");
+                        addLog(`✓ Autotrader created bot for ${sym}: Lower=${lowerPrice}, Upper=${upperPrice}, Grids=200, Inv=$${investment}`, "ok");
                     } else {
                         addLog(`✗ Failed to create bot for ${sym}: ${res.message}`, "error");
                     }
@@ -6512,8 +6494,10 @@
         /**
          * Autotrader Main Cycle (runs every 1 second)
          * 1. If MONITORING: check bots total PnL. If total PnL > 0.5 USDT -> STOP bots -> switch to WAITING_FUNDING
-         * 2. If WAITING_FUNDING: poll funding balance every 1s. Once fundingBalance > initialFundingBalance:
-         *    update initialFundingBalance, re-launch bots with fresh ±50% prices from live WS ticker, switch to MONITORING
+         * 2. If WAITING_FUNDING:
+         *    - Verify all running bots have stopped (activeBotsCount === 0)
+         *    - Verify funding balance has returned with enough USDT to start all autotrader bots (balance >= requiredFunding)
+         *    - When both conditions are met -> re-launch all bots with fresh ±50% prices from live WS ticker -> switch to MONITORING
          */
         async function runAutoTraderCycleStep() {
             if (!autoTraderRunning || isAutoTraderCycleRunning) return;
@@ -6543,42 +6527,62 @@
                     // Condition: PnL is greater than 0.5 USDT and there are active bots running
                     if (activeBotsCount > 0 && totalPnl > 0.5) {
                         addLog(`🎯 PnL is $${totalPnl.toFixed(4)} USDT (> $0.50). Triggering profit stop and recycle!`, "ok");
+                        autoTraderRealizedProfitTotal += totalPnl;
                         updateAutoTraderStatus("STOPPING_PROFIT", `TAKING PROFIT (+$${totalPnl.toFixed(2)})`);
 
-                        // 1. Stop bot or bots
+                        // 1. Stop all bots
                         await stopAllBotsForProfitTaking();
 
-                        // 2. Move to settlement check state
-                        updateAutoTraderStatus("WAITING_FUNDING", `WAITING SETTLEMENT (> $${initialFundingBalance.toFixed(4)})`);
+                        // 2. Compute required funding for next cycle
+                        const activeSymbols = getActiveAutoTraderSymbols();
+                        const requiredFunding = activeSymbols.length * autoTraderInvestment;
+
+                        // 3. Move to settlement check state
+                        updateAutoTraderStatus("WAITING_FUNDING", `WAITING FUNDS ($${requiredFunding} USDT)`);
+                        addLog(`⏳ Waiting for all bots to stop and balance to return to Funding Account (Need $${requiredFunding} USDT for ${activeSymbols.length} bot(s) @ $${autoTraderInvestment} USDT)...`, "info");
                     }
 
                 } else if (autoTraderStatus === "WAITING_FUNDING") {
-                    // Check every 1 second if funding account is bigger than it was before start autotrader was clicked
+                    // 1. Check if all bots have stopped
+                    const listRes = await fetch("/api/bot/list");
+                    const listData = await listRes.json();
+                    const activeBotsCount = (listData.success && listData.summary) ? (Number(listData.summary.totalActiveBots) || 0) : 0;
+
+                    const activeSymbols = getActiveAutoTraderSymbols();
+                    const requiredFunding = activeSymbols.length * autoTraderInvestment;
+
+                    // 2. Fetch current funding account balance
                     const balance = await fetchFundingBalance();
 
                     // Update Earned Since Start display during settlement wait
                     updateAutoTraderEarnedDisplay(0);
 
-                    if (balance !== null && initialFundingBalance !== null && balance > initialFundingBalance) {
-                        const profitDiff = (balance - initialFundingBalance).toFixed(4);
-                        autoTraderRealizedProfitTotal += (balance - initialFundingBalance);
-                        updateAutoTraderEarnedDisplay(0);
+                    // If bots are still running, wait for all bots to stop
+                    if (activeBotsCount > 0) {
+                        updateAutoTraderStatus("WAITING_FUNDING", `STOPPING BOTS (${activeBotsCount} remaining)`);
+                        return;
+                    }
 
-                        addLog(`🎉 Funding Account increased! Previous: $${initialFundingBalance.toFixed(4)} USDT &rarr; Current: $${balance.toFixed(4)} USDT (+${profitDiff} USDT).`, "ok");
+                    // All bots have stopped; check if balance has returned to funding with enough USDT to start all bots
+                    const currentBal = (balance !== null && balance !== undefined) ? balance : 0;
 
-                        // Update initialFundingBalance to the new higher balance
-                        initialFundingBalance = balance;
-                        updateAutoTraderStatus("RESTARTING", "RE-LAUNCHING BOTS");
+                    if (currentBal < requiredFunding) {
+                        updateAutoTraderStatus("WAITING_FUNDING", `WAITING FUNDS ($${currentBal.toFixed(2)} / $${requiredFunding.toFixed(2)})`);
+                        return;
+                    }
 
-                        // Re-launch bot or bots with fresh -50%/+100% grid prices from live WebSocket ticker, 360 grids, SL 25%
-                        addLog(`🚀 Re-launching bots with fresh grid parameters (-50%/+100%, 360 grids, SL: 25%, $${autoTraderInvestment} USDT)...`, "ok");
-                        const launched = await launchBotsForSelectedSymbols();
+                    // Both conditions met: all bots stopped and funding balance has enough USDT!
+                    addLog(`🎉 All bots stopped & funds available! Funding Balance: $${currentBal.toFixed(4)} USDT >= Required $${requiredFunding.toFixed(2)} USDT (${activeSymbols.length} bots @ $${autoTraderInvestment} USDT). Re-launching bots...`, "ok");
+                    updateAutoTraderStatus("RESTARTING", "RE-LAUNCHING BOTS");
 
-                        if (launched) {
-                            updateAutoTraderStatus("MONITORING", "MONITORING PnL");
-                        } else {
-                            addLog("Could not re-launch bots immediately; will retry on next cycle step.", "warning");
-                        }
+                    // Re-launch bots with fresh -50%/+50% grid prices from live WebSocket ticker, 200 grids
+                    addLog(`🚀 Re-launching bots with fresh grid parameters (-50%/+50%, 200 grids, $${autoTraderInvestment} USDT)...`, "ok");
+                    const launched = await launchBotsForSelectedSymbols();
+
+                    if (launched) {
+                        updateAutoTraderStatus("MONITORING", "MONITORING PnL");
+                    } else {
+                        addLog("Could not re-launch bots immediately; will retry on next cycle step.", "warning");
                     }
                 }
             } catch (cycleErr) {
@@ -6592,7 +6596,7 @@
          * Start Autotrader button handler
          * 1. Validates selected symbols
          * 2. Queries & records Funding Account USDT balance before starting
-         * 3. Creates bot or bots with selected investment (50, 100, 250), -50%/+100% grids, 360 grids, SL 25%
+         * 3. Creates bot or bots with selected investment, -50%/+50% grids, 200 grids
          * 4. Starts 1-second monitoring loop
          */
         async function startAutotrader() {
@@ -6652,7 +6656,7 @@
             if (autoTraderCycleInterval) clearInterval(autoTraderCycleInterval);
             autoTraderCycleInterval = setInterval(runAutoTraderCycleStep, 1000);
 
-            addLog(`▶ Autotrader STARTED for [${activeSymbols.join(", ")}]. Investment: $${autoTraderInvestment} USDT, 360 Grids, SL: 25%. Take profit target: > $0.50 USDT.`, "ok");
+            addLog(`▶ Autotrader STARTED for [${activeSymbols.join(", ")}]. Investment: $${autoTraderInvestment} USDT, 200 Grids. Take profit target: > $0.50 USDT.`, "ok");
         }
 
         /**
