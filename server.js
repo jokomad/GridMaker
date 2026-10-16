@@ -273,7 +273,7 @@ app.get("/api/health", (req, res) => {
 
 /**
  * Create Neutral Grid Bot
- * Parameters expected: symbol, lowerPrice, upperPrice, gridCount, leverage (default 10), investment (default 50)
+ * Parameters expected: symbol, lowerPrice, upperPrice, gridCount, leverage (default 3), investment (default 50), gridType (default 2 Geometric)
  */
 app.post("/api/bot/create", async (req, res) => {
     try {
@@ -284,9 +284,10 @@ app.post("/api/bot/create", async (req, res) => {
             stopLossPrice,
             stopLossRatio,
             gridCount,
-            leverage = 10,
+            leverage = 3,
             investment = 50,
-            currentPrice
+            currentPrice,
+            gridType = 2
         } = req.body;
 
         if (!symbol || !lowerPrice || !upperPrice || !gridCount) {
@@ -297,10 +298,11 @@ app.post("/api/bot/create", async (req, res) => {
         }
 
         const invAmount = Number(investment) || 50;
-        const lev = Number(leverage) || 10;
+        const lev = Number(leverage) || 3;
         const grids = parseInt(gridCount, 10);
         const lower = Number(lowerPrice);
         const upper = Number(upperPrice);
+        const gType = Number(gridType) || 2; // 1 = Arithmetic, 2 = Geometric
         const slPrice = (stopLossPrice !== undefined && stopLossPrice !== null && stopLossPrice !== "" && Number(stopLossPrice) > 0) ? Number(stopLossPrice) : null;
         const slRatio = (stopLossRatio !== undefined && stopLossRatio !== null && stopLossRatio !== "" && Number(stopLossRatio) > 0) ? Number(stopLossRatio) : null;
 
@@ -311,10 +313,10 @@ app.post("/api/bot/create", async (req, res) => {
             });
         }
 
-        console.log(`[BOT CREATE] Launching Neutral Grid Bot for ${symbol}: Lower=${lower}, Upper=${upper}, Grids=${grids}, Lev=${lev}x, Invest=${invAmount} USDT, SL Ratio=${slRatio !== null ? slRatio : 'None'}, SL Price=${slPrice !== null ? slPrice : 'None'}`);
+        console.log(`[BOT CREATE] Launching Neutral Grid Bot for ${symbol}: Lower=${lower}, Upper=${upper}, Grids=${grids}, Lev=${lev}x, GridType=${gType === 2 ? 'Geometric' : 'Arithmetic'}, Invest=${invAmount} USDT, SL Ratio=${slRatio !== null ? slRatio : 'None'}, SL Price=${slPrice !== null ? slPrice : 'None'}`);
 
         // Bybit V5 Futures Grid Bot payload:
-        // direction: 3 (Neutral), grid_mode: 1 (Neutral), grid_type: 1 (Arithmetic)
+        // direction: 3 (Neutral), grid_mode: 1 (Neutral), grid_type: 2 (Geometric)
         // TP/SL documentation: https://bybit-exchange.github.io/docs/v5/bot/futures-grid/create
         // tp_sl_type: 1 = Both TP and SL by percentage
         // stop_loss_per: Stop-loss percentage value (e.g. "25" means 25%, "0.25" means 0.25%)
@@ -327,7 +329,7 @@ app.post("/api/bot/create", async (req, res) => {
             cell_number: String(grids),
             total_investment: String(invAmount),
             grid_mode: 1,
-            grid_type: 1
+            grid_type: gType
         };
 
         if (slRatio) {
@@ -378,6 +380,7 @@ app.post("/api/bot/create", async (req, res) => {
             id: String(botId),
             symbol: symbol,
             direction: "Neutral",
+            gridType: gType === 2 ? "Geometric" : "Arithmetic",
             leverage: lev,
             lowerPrice: lower,
             upperPrice: upper,
@@ -450,7 +453,8 @@ app.get("/api/bot/list", async (req, res) => {
                             }
                             bot.symbol = detail.symbol || bot.symbol;
                             bot.direction = "Neutral";
-                            bot.leverage = Number(detail.leverage) || bot.leverage || 10;
+                            bot.leverage = Number(detail.leverage) || bot.leverage || 3;
+                            bot.gridType = detail.grid_type === 2 ? "Geometric" : (detail.grid_type === 1 ? "Arithmetic" : (bot.gridType || "Geometric"));
                             bot.lowerPrice = Number(detail.min_price) || bot.lowerPrice;
                             bot.upperPrice = Number(detail.max_price) || bot.upperPrice;
                             bot.gridCount = Number(detail.cell_number) || bot.gridCount;
