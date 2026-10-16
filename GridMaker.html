@@ -1115,7 +1115,7 @@
 
                         <div class="parameter">
                             <div class="parameter-label">Leverage</div>
-                            <div class="parameter-value" id="leverage" style="color:#ffb13b;">10x</div>
+                            <div class="parameter-value" id="leverage" style="color:#ffb13b;">3x</div>
                         </div>
 
                         <div class="parameter">
@@ -1450,8 +1450,12 @@
                     <span>Neutral Futures Grid</span>
                 </div>
                 <div class="modal-row">
+                    <span style="color: #888;">Grid Type:</span>
+                    <span id="modalBotGridType" style="font-weight: bold; color: #73dc73;">Geometric</span>
+                </div>
+                <div class="modal-row">
                     <span style="color: #888;">Leverage:</span>
-                    <span id="modalBotLeverage" style="font-weight: bold; color: #73dc73;">5x</span>
+                    <span id="modalBotLeverage" style="font-weight: bold; color: #73dc73;">3x</span>
                 </div>
                 <div class="modal-row">
                     <span style="color: #888; display: flex; align-items: center; gap: 6px;">
@@ -1524,7 +1528,7 @@
 
         const SIM_CAPITAL = 1000;
 
-        const LEVERAGE = 10;
+        const LEVERAGE = 3;
 
         /*
             Candidate grid spacings tested by the scanner.
@@ -4751,9 +4755,9 @@
             const botLowerFormatted = formatBybitPrice(botLower, modalTickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, modalTickSize);
             const botGrids = 200;
-            const botLeverage = 5;
+            const botLeverage = 3;
 
-            // Arithmetic profit per grid estimate: ((upper/lower)^(1/grids) - 1) * 100
+            // Geometric profit per grid estimate: ((upper/lower)^(1/grids) - 1) * 100
             const profitPerGrid = ((Math.pow(botUpper / botLower, 1 / botGrids) - 1) * 100);
 
             const currPriceElem = document.getElementById("modalBotCurrentPrice");
@@ -5476,13 +5480,13 @@
             const currentPrice = modalLatestPrice || selectedResult.price || (selectedResult.recommendation && selectedResult.recommendation.currentPrice);
             const tickSize = (selectedResult.recommendation && selectedResult.recommendation.tickSize) || 0.00000001;
 
-            // Parameters for creation: 50% below, 50% above, 200 grids, 5x leverage (no stop loss)
+            // Parameters for creation: 50% below, 50% above, 200 grids, 3x leverage, geometric grids (no stop loss)
             const botLower = snapToTick(currentPrice * 0.50, tickSize);
             const botUpper = snapToTick(currentPrice * 1.50, tickSize);
             const botLowerFormatted = formatBybitPrice(botLower, tickSize);
             const botUpperFormatted = formatBybitPrice(botUpper, tickSize);
             const botGrids = 200;
-            const botLeverage = 5;
+            const botLeverage = 3;
 
             const invInput = document.getElementById("botInvestmentInput");
             const investment = invInput ? (parseFloat(invInput.value) || 100) : 100;
@@ -5491,7 +5495,7 @@
             btnConfirm.disabled = true;
             btnConfirm.textContent = "Starting...";
 
-            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids)...`, "info");
+            addLog(`Creating Neutral Grid Bot for ${symbol} ($${investment} @ ${botLeverage}x, 200 grids, Geometric)...`, "info");
 
             try {
                 const response = await fetch("/api/bot/create", {
@@ -5505,6 +5509,7 @@
                         stopLossRatio: null,
                         gridCount: botGrids,
                         leverage: botLeverage,
+                        gridType: 2, // 2 = Geometric
                         investment: investment,
                         currentPrice: currentPrice
                     })
@@ -5717,7 +5722,7 @@
 
                     tr.innerHTML = `
                 <td class="symbol">${bot.symbol}</td>
-                <td><span class="rec-badge" style="background:#223326; color:#8ee88e;">Neutral</span> ${bot.leverage}x</td>
+                <td><span class="rec-badge" style="background:#223326; color:#8ee88e;">Neutral</span> ${bot.leverage}x${bot.gridType ? ` <span style="font-size:11px; color:#8ee88e;">${bot.gridType}</span>` : ''}</td>
                 <td>${bot.lowerPrice}</td>
                 <td>${bot.upperPrice}</td>
                 <td>${bot.gridCount}</td>
@@ -6397,7 +6402,7 @@
         }
 
         /**
-         * Launch Grid Bots for all selected symbols with live WebSocket ±50% prices, 200 grids, 5x leverage
+         * Launch Grid Bots for all selected symbols with live WebSocket ±50% prices, 200 grids, 3x leverage, Geometric
          */
         async function launchBotsForSelectedSymbols() {
             const activeSymbols = getActiveAutoTraderSymbols();
@@ -6406,7 +6411,7 @@
                 return false;
             }
 
-            addLog(`🤖 Autotrader launching ${activeSymbols.length} bot(s) with $${autoTraderInvestment} USDT, 200 grids each...`, "info");
+            addLog(`🤖 Autotrader launching ${activeSymbols.length} bot(s) with $${autoTraderInvestment} USDT, 200 grids each (3x, Geometric)...`, "info");
             let launchedCount = 0;
 
             for (const sym of activeSymbols) {
@@ -6433,7 +6438,7 @@
                 const lowerPrice = snapToTick(ticker.price * 0.50, tickSize);
                 const upperPrice = snapToTick(ticker.price * 1.50, tickSize);
                 const gridCount = 200; // 200 grids
-                const leverage = 5;    // 5x leverage
+                const leverage = 3;    // 3x leverage
                 const investment = autoTraderInvestment; // 100, 200, 300, 400, or 500 USDT
 
                 try {
@@ -6448,6 +6453,7 @@
                             stopLossRatio: null,
                             gridCount,
                             leverage,
+                            gridType: 2, // 2 = Geometric
                             investment,
                             currentPrice: ticker.price
                         })
